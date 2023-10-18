@@ -1,0 +1,78 @@
+{
+  "IDENTITY": {
+    "COLUMNS": [
+      "ID",
+      "FIRST_NAME",
+      "LAST_NAME",
+      "SIZE",
+      "AGE"
+    ],
+    "TYPES": {
+      "ID": "int",
+      "FIRST_NAME": "string",
+      "LAST_NAME": "string",
+      "SIZE": "float",
+      "AGE": "int"
+    },
+    "VALUES": [
+      {
+        "ID": 0,
+        "FIRST_NAME": "John",
+        "LAST_NAME": "Doe",
+        "SIZE": 175.50,
+        "AGE": 21
+      },
+      {
+        "ID": 1,
+        "FIRST_NAME": "Neo",
+        "LAST_NAME": "Trinitron",
+        "SIZE": 184.20,
+        "AGE": 33
+      },
+      {
+        "ID": 2,
+        "FIRST_NAME": "Alan",
+        "LAST_NAME": "Turingstone",
+        "SIZE": 170.30,
+        "AGE": 45
+      },
+      {
+        "ID": 3,
+        "FIRST_NAME": "Luke",
+        "LAST_NAME": "Skylogger",
+        "SIZE": 173.80,
+        "AGE": 18
+      }
+    ],
+    "ID": 3
+  },
+  "HOUSES": {
+    "COLUMNS": [
+      "ID",
+      "PLANET",
+      "CLIMATE",
+      "HABITABLE"
+    ],
+    "TYPES": {
+      "ID": "int",
+      "PLANET": "string",
+      "CLIMATE": "string",
+      "HABITABLE": "bool"
+    },
+    "VALUES": [
+      {
+        "ID": 0,
+        "PLANET": "Arrakis",
+        "CLIMATE": "Arid",
+        "HABITABLE": false
+      },
+      {
+        "ID": 1,
+        "PLANET": "Pandora",
+        "CLIMATE": "Tropical",
+        "HABITABLE": true
+      }
+    ],
+    "ID": 1
+  }
+}

@@ -1,0 +1,17 @@
+{
+    "name": "palepupet/dbjsonbased",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Palepupet\\Dbjsonbased\\": "src/",
+            "Palepupet\\Dbjsonbased\\Tests\\": "tests/"
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.2"
+    },
+    "scripts": {
+        "test": "phpunit --colors=always"
+    }
+}
