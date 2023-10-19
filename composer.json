@@ -4,8 +4,8 @@
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "Palepupet\\Dbjsonbased\\": "src/",
-            "Palepupet\\Dbjsonbased\\Tests\\": "tests/"
+            "Palepupet\\DbJsonBased\\": "src/",
+            "Palepupet\\DbJsonBased\\Tests\\": "tests/"
         }
     },
     "require-dev": {
