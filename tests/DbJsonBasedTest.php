@@ -16,6 +16,8 @@ class DbJsonBasedTest extends TestCase
     protected $createDbDirectory;
     protected $writeDb;
     protected $writeDbDirectory;
+    protected $fakeDb;
+    protected $fakeDbDirectory;
 
     protected function setUp(): void
     {
@@ -24,10 +26,12 @@ class DbJsonBasedTest extends TestCase
         $this->dbDirectory = __DIR__ . DIRECTORY_SEPARATOR . 'fixtures' . DIRECTORY_SEPARATOR . 'db';
         $this->createDbDirectory = __DIR__ . DIRECTORY_SEPARATOR . 'fixtures' . DIRECTORY_SEPARATOR . "to_remove" . DIRECTORY_SEPARATOR . "dbCreate";
         $this->writeDbDirectory = __DIR__ . DIRECTORY_SEPARATOR . 'fixtures' . DIRECTORY_SEPARATOR . "to_remove" . DIRECTORY_SEPARATOR . "dbWrite";
+        $this->fakeDbDirectory = __DIR__ . DIRECTORY_SEPARATOR . 'fixtures' . DIRECTORY_SEPARATOR . "fakeDb";
 
         $this->db = new DbJsonBased($this->dbDirectory);
         $this->createDb = new DbJsonBased($this->createDbDirectory);
         $this->writeDb = new DbJsonBased($this->writeDbDirectory);
+        $this->fakeDb = new DbJsonBased($this->fakeDbDirectory);
 
         // Create a test folder if it does not exist
         $this->toRemoveFolder = __DIR__ . DIRECTORY_SEPARATOR . 'fixtures' . DIRECTORY_SEPARATOR . "to_remove";
@@ -40,7 +44,7 @@ class DbJsonBasedTest extends TestCase
         foreach ($files as $file) {
             if (
                 is_file($file) &&
-                ($file === $this->createDb->getName() || $file === $this->writeDb->getName())
+                ($file === $this->createDb->getPath() || $file === $this->writeDb->getPath())
             ) {
                 unlink($file);
             }

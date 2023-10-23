@@ -2,8 +2,8 @@
 
 namespace Palepupet\DbJsonBased\exceptions;
 
-use Exception;
+use RuntimeException;
 
-class DbJsonBasedRuntimeException extends Exception
+class DbJsonBasedRuntimeException extends RuntimeException
 {
 }
