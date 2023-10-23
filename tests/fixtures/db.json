@@ -1,13 +1,6 @@
 {
   "IDENTITY": {
-    "COLUMNS": [
-      "ID",
-      "FIRST_NAME",
-      "LAST_NAME",
-      "SIZE",
-      "AGE"
-    ],
-    "TYPES": {
+    "COLUMNS": {
       "ID": "int",
       "FIRST_NAME": "string",
       "LAST_NAME": "string",
@@ -47,13 +40,7 @@
     "ID": 3
   },
   "HOUSES": {
-    "COLUMNS": [
-      "ID",
-      "PLANET",
-      "CLIMATE",
-      "HABITABLE"
-    ],
-    "TYPES": {
+    "COLUMNS": {
       "ID": "int",
       "PLANET": "string",
       "CLIMATE": "string",
