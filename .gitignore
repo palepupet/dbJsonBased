@@ -50,6 +50,6 @@ Thumbs.db
 
 
 /vendor/
-bdd.json
-index.php
+/tests/fixtures/to_remove/*.json
+index.*
 .phpunit.cache

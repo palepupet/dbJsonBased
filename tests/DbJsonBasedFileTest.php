@@ -39,7 +39,9 @@ class DbJsonBasedFileTest extends DbJsonBasedTest
         $this->assertFileDoesNotExist($this->createDbDirectory);
 
         // Create the file
-        $structure = new DbJsonBasedStructure("tableName", ["value1" => "string"]);
+        $structure = new DbJsonBasedStructure("tableName", [
+            "value1" => DbJsonBasedStructure::TYPE_STRING
+        ]);
         $res = $this->createDb->createDb($structure);
 
         // Check the file exists after creation
@@ -53,7 +55,9 @@ class DbJsonBasedFileTest extends DbJsonBasedTest
     public function testCreateDbIfFileAlreadyExists()
     {
         // First creation
-        $structure = new DbJsonBasedStructure("tableName", ["value1" => "string"]);
+        $structure = new DbJsonBasedStructure("tableName", [
+            "value1" => DbJsonBasedStructure::TYPE_STRING
+        ]);
         $this->createDb->createDb($structure);
 
         // If the file already exists throw exception
@@ -70,10 +74,10 @@ class DbJsonBasedFileTest extends DbJsonBasedTest
         $structure = new DbJsonBasedStructure(
             "identity",
             [
-                "first_name" => "string",
-                "last_name" => "string",
-                "size" => "float",
-                "age" => "int"
+                "first_name" => DbJsonBasedStructure::TYPE_STRING,
+                "last_name" => DbJsonBasedStructure::TYPE_STRING,
+                "size" => DbJsonBasedStructure::TYPE_FLOAT,
+                "age" => DbJsonBasedStructure::TYPE_INT
             ]
         );
         $this->createDb->createDb($structure);
