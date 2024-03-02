@@ -16,7 +16,9 @@ class DbJsonBasedStructureTest extends DbJsonBasedTest
      */
     public function testStructureHasValidInstance()
     {
-        $structure = new DbJsonBasedStructure("tableName", ["key1" => "string"]);
+        $structure = new DbJsonBasedStructure("tableName", [
+            "key1" => DbJsonBasedStructure::TYPE_STRING
+        ]);
         $this->assertInstanceOf(DbJsonBasedStructureInterface::class, $structure);
     }
 
@@ -26,7 +28,9 @@ class DbJsonBasedStructureTest extends DbJsonBasedTest
     public function testStructureDoesNotHaveTableName()
     {
         $this->expectException(DbJsonBasedInvalidArgumentException::class);
-        $structure = new DbJsonBasedStructure("", ["key1" => "bool"]);
+        $structure = new DbJsonBasedStructure("", [
+            "key1" => DbJsonBasedStructure::TYPE_BOOLEAN
+        ]);
     }
 
     /**
@@ -35,7 +39,9 @@ class DbJsonBasedStructureTest extends DbJsonBasedTest
     public function testStructureDoesNotHaveFullKeys()
     {
         $this->expectException(DbJsonBasedInvalidArgumentException::class);
-        $structure = new DbJsonBasedStructure("tableName", ["" => "float"]);
+        $structure = new DbJsonBasedStructure("tableName", [
+            "" => DbJsonBasedStructure::TYPE_FLOAT
+        ]);
     }
 
     /**
@@ -44,7 +50,9 @@ class DbJsonBasedStructureTest extends DbJsonBasedTest
     public function testStructureDoesNotHaveFullValues()
     {
         $this->expectException(DbJsonBasedInvalidArgumentException::class);
-        $structure = new DbJsonBasedStructure("tableName", ["key1" => ""]);
+        $structure = new DbJsonBasedStructure("tableName", [
+            "key1" => ""
+        ]);
     }
 
     /**
@@ -53,7 +61,9 @@ class DbJsonBasedStructureTest extends DbJsonBasedTest
     public function testStructureDoesNotHaveValidTypes()
     {
         $this->expectException(DbJsonBasedInvalidArgumentException::class);
-        $structure = new DbJsonBasedStructure("tableName", ["key1" => "wrongTypes"]);
+        $structure = new DbJsonBasedStructure("tableName", [
+            "key1" => "wrongTypes"
+        ]);
     }
 
     /**
@@ -61,7 +71,9 @@ class DbJsonBasedStructureTest extends DbJsonBasedTest
      */
     public function testStructureHasWellTableName()
     {
-        $structure = new DbJsonBasedStructure("tableName", ["key1" => "string"]);
+        $structure = new DbJsonBasedStructure("tableName", [
+            "key1" => DbJsonBasedStructure::TYPE_STRING
+        ]);
         $this->assertEquals("TABLENAME", $structure->getTableName());
         $this->assertIsString($structure->getTableName());
     }
@@ -71,7 +83,10 @@ class DbJsonBasedStructureTest extends DbJsonBasedTest
      */
     public function testStructureHasWellColumns()
     {
-        $structure = new DbJsonBasedStructure("tableName", ["key1" => "string", "key2" => "float"]);
+        $structure = new DbJsonBasedStructure("tableName", [
+            "key1" => DbJsonBasedStructure::TYPE_STRING,
+            "key2" => DbJsonBasedStructure::TYPE_FLOAT
+        ]);
         $columns = $structure->getColumns();
         $this->assertIsArray($columns);
         $this->assertCount(3, $columns);
@@ -91,21 +106,32 @@ class DbJsonBasedStructureTest extends DbJsonBasedTest
     public function testStructureHasWellTypedIdColumn()
     {
         // Wrong typed ID
-        $structure = new DbJsonBasedStructure("tableName", ["key1" => "string", "key2" => "float", "id" => "string"]);
+        $structure = new DbJsonBasedStructure("tableName", [
+            "key1" => DbJsonBasedStructure::TYPE_STRING,
+            "key2" => DbJsonBasedStructure::TYPE_FLOAT,
+            "id" => DbJsonBasedStructure::TYPE_STRING
+        ]);
         $columns = $structure->getColumns();
 
         $this->assertArrayHasKey("ID", $columns);
         $this->assertEquals($columns["ID"], "int");
 
         // Correct typed ID
-        $structure = new DbJsonBasedStructure("tableName", ["key1" => "string", "key2" => "float", "id" => "int"]);
+        $structure = new DbJsonBasedStructure("tableName", [
+            "key1" => DbJsonBasedStructure::TYPE_STRING,
+            "key2" => DbJsonBasedStructure::TYPE_FLOAT,
+            "id" => DbJsonBasedStructure::TYPE_INT
+        ]);
         $columns = $structure->getColumns();
 
         $this->assertArrayHasKey("ID", $columns);
         $this->assertEquals($columns["ID"], "int");
 
         // Without ID
-        $structure = new DbJsonBasedStructure("tableName", ["key1" => "string", "key2" => "float"]);
+        $structure = new DbJsonBasedStructure("tableName", [
+            "key1" => DbJsonBasedStructure::TYPE_STRING,
+            "key2" => DbJsonBasedStructure::TYPE_FLOAT
+        ]);
         $columns = $structure->getColumns();
 
         $this->assertArrayHasKey("ID", $columns);

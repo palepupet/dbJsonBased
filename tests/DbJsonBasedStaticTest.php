@@ -2,6 +2,7 @@
 
 namespace Palepupet\DbJsonBased\Tests;
 
+use Palepupet\DbJsonBased\DbJsonBasedStructure;
 use Palepupet\DbJsonBased\Utils;
 use Palepupet\DbJsonBased\exceptions\DbJsonBasedRuntimeException;
 
@@ -42,20 +43,20 @@ class DbJsonBasedStaticTest extends DbJsonBasedTest
     public function testEncodeAndWriteFile()
     {
         $structure = [
-            "first_name" => "string",
-            "last_name" => "string",
-            "size" => "float",
-            "age" => "int"
+            "first_name" => DbJsonBasedStructure::TYPE_STRING,
+            "last_name" => DbJsonBasedStructure::TYPE_STRING,
+            "size" => DbJsonBasedStructure::TYPE_FLOAT,
+            "age" => DbJsonBasedStructure::TYPE_INT
         ];
 
-        Utils::encodeAndWriteFile($this->createDb->getFullName(), $structure);
+        Utils::encodeAndWriteFile($this->createDb->getPath(), $structure);
 
-        $fetchDatas = Utils::getContentAndDecode($this->createDb->getFullName());
+        $fetchDatas = Utils::getContentAndDecode($this->createDb->getPath());
 
         $this->assertCount(4, $fetchDatas);
-        $this->assertEquals($fetchDatas["first_name"], "string");
-        $this->assertEquals($fetchDatas["last_name"], "string");
-        $this->assertEquals($fetchDatas["size"], "float");
-        $this->assertEquals($fetchDatas["age"], "int");
+        $this->assertEquals($fetchDatas["first_name"], DbJsonBasedStructure::TYPE_STRING);
+        $this->assertEquals($fetchDatas["last_name"], DbJsonBasedStructure::TYPE_STRING);
+        $this->assertEquals($fetchDatas["size"], DbJsonBasedStructure::TYPE_FLOAT);
+        $this->assertEquals($fetchDatas["age"], DbJsonBasedStructure::TYPE_INT);
     }
 }
