@@ -288,7 +288,60 @@ class DbJsonBased
         // Updating datas
         $allDatabaseDatas = Utils::getContentAndDecode($this->dbName);
         $allDatabaseDatas[strtoupper($datas->tableName)]["VALUES"] = $mergingDatas;
+        $allDatabaseDatas[strtoupper($datas->tableName)]["ID"] = $lastUsedId;
         Utils::encodeAndWriteFile($this->dbName, $allDatabaseDatas);
+    }
+
+    /**
+     * remove
+     * 
+     * Remove one entity in tableName or remove the entire tableName's values
+     *
+     * @param string $tableName The targeted table into the database
+     * @param int|null $idToRemove The entity's ID to remove
+     * @param bool $removeAllTableNameValues=false Will remove the entire tableName's values
+     * @return bool
+     */
+    public function remove(string $tableName, ?int $idToRemove, bool $removeAllTableNameValues = false): bool
+    {
+        $datasKept = [];
+        $removingAll = false;
+
+        if (!is_null($idToRemove) && $removeAllTableNameValues) {
+            // Remove entire tableName with an ID
+            throw new DbJsonBasedInvalidArgumentException("Cannot remove entire table if an ID is provided");
+        } else if (is_null($idToRemove) && $removeAllTableNameValues) {
+            // Remove entire tableName without ID
+            $removingAll = true;
+            $this->getVerifiedTable($tableName);
+        } else {
+            $removingAll = false;
+            $entity = $this->findOne($tableName, $idToRemove);
+
+            // If the ID does not exist
+            if (!isset($entity) || empty($entity)) {
+                throw new DbJsonBasedInvalidArgumentException("The provided ID does not exist");
+            }
+
+            $allDatas = $this->findAll($tableName);
+            $datasKept = array_filter($allDatas, function ($item) use ($idToRemove) {
+                return $item["ID"] !== $idToRemove;
+            });
+
+            $datasKept = array_values($datasKept);
+        }
+
+        $allDatabaseDatas = Utils::getContentAndDecode($this->dbName);
+        $allDatabaseDatas[strtoupper($tableName)]["VALUES"] = $datasKept;
+
+        // If removing all tableName's values, resetting ID
+        if ($removingAll) {
+            $allDatabaseDatas[strtoupper($tableName)]["ID"] = 0;
+        }
+
+        Utils::encodeAndWriteFile($this->dbName, $allDatabaseDatas);
+
+        return true;
     }
 
     /**
@@ -308,7 +361,7 @@ class DbJsonBased
         $datas = Utils::getContentAndDecode($this->getPath());
 
         if (empty($datas[strtoupper($tableName)])) {
-            throw new DbJsonBasedInvalidArgumentException("The TABLENAME '$tableName' does not exists");
+            throw new DbJsonBasedInvalidArgumentException("The TABLENAME '$tableName' does not exist");
         }
 
         return $datas[strtoupper($tableName)];

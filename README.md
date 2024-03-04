@@ -19,7 +19,7 @@ $jsonDb = new DbJsonBased("path_of_the_db_without_json_extension");
 Then you have to create the database's file, use **DbJsonBasedStructureInterface** to do this. You must provide a structure for your datas with a **DbJsonBasedStructureInterface** as argument. **DbJsonBasedStructure** class implements it with all needed methods to check them.
 
 ```php
-$jsonDb->createDb(new DbJsonBasedStructure(string tableName, array columns));
+$jsonDb->createDb(new DbJsonBasedStructure(string $tableName, array $columns));
 ```
 
 To make it short, you can do that :
@@ -38,7 +38,7 @@ $datasStructure = new DbJsonBasedStructure("Customers", [
 $jsonDb->createDb($datasStructure);
 ```
 
-All accepted types are **boolean**, **float** , **int**, and **string**. You can use the class constants provided if you wish
+All accepted types are **boolean**, **float**, **int**, and **string**. You can use the class constants provided if you wish
 
 ```php
 DbJsonBasedStructure::TYPE_BOOLEAN
@@ -110,6 +110,31 @@ $datas = new DbJsonBasedData($jsonDb, "Customers", [
 $jsonDb->insert($datas);
 ```
 
+**Remove datas :**
+
+**remove(string \$tableName, ?int \$idToRemove, bool \$removeAllTableNameValues = false)**
+DbJsonBased offers several data deletion options, depending on your needs. One function brings this together. Only the arguments will configure the deletion you need
+
+* You can delete only one entity in a table **remove('Customers', 1)**. In this case you will delete the entity from the 'Customer' table which has id 1. If we base ourselves on the datas inserted in the insert function above, you will therefore have, after deletion, the following data :
+
+```php
+// result
+array(1) {
+    [0] => array(5) {
+        ["FIRST_NAME"] => string(4) "John"
+        ["LAST_NAME"] => string(3) "Doe"
+        ["SIZE"] => float(175.5)
+        ["AGE"] => int(21)
+        ["ID"] => int(0)
+    }
+}
+```
+
+* You can delete all values ​​from the table. If you do this you will reset all the values ​​already present, **remove('Customers', null, true)**. Do not provide any id if you want to use this deletion
+
+> **_NOTICE :_**
+> By doing this you will delete all the values ​​present in the table. Once the operation is done, you will not be able to recover deleted data.
+
 **Handling :**
 
 Several methods are available to manipulate databases. To find and fetch datas :
@@ -119,13 +144,13 @@ Several methods are available to manipulate databases. To find and fetch datas :
 ```php
 // datas
 ["first_name" => "John", "last_name" => "Doe", "size" => 175.50, "age" => 21],
-["first_name": "Neo", "last_name": "Trinitron", "size": 184.20, "age": 33],
-["first_name": "Alan", "last_name": "Turingstone", "size": 170.30, "age": 45],
-["first_name": "Luke", "last_name": "Skylogger", "size": 173.80, "age": 18]
+["first_name" => "Neo", "last_name" => "Trinitron", "size" => 184.20, "age" => 33],
+["first_name" => "Alan", "last_name" => "Turingstone", "size" => 170.30, "age" => 45],
+["first_name" => "Luke", "last_name" => "Skylogger", "size" => 173.80, "age" => 18]
 
 $jsonDb->findOne("Customers", 1);
 
-// resultat
+// result
 array(1) {
     [0]=> array(5) {
         ["ID"] => int(1)
@@ -142,13 +167,13 @@ array(1) {
 ```php
 // datas
 ["first_name" => "John", "last_name" => "Doe", "size" => 175.50, "age" => 21],
-["first_name": "Neo", "last_name": "Trinitron", "size": 184.20, "age": 33],
-["first_name": "Alan", "last_name": "Turingstone", "size": 170.30, "age": 45],
-["first_name": "Luke", "last_name": "Skylogger", "size": 173.80, "age": 18]
+["first_name" => "Neo", "last_name" => "Trinitron", "size" => 184.20, "age" => 33],
+["first_name" => "Alan", "last_name" => "Turingstone", "size" => 170.30, "age" => 45],
+["first_name" => "Luke", "last_name" => "Skylogger", "size" => 173.80, "age" => 18]
 
 $jsonDb->findAll("Customers");
 
-// resultat
+// result
 array(4) {
     [0] => array(5) {
         ["ID"] => int(0)
@@ -196,7 +221,7 @@ $jsonDb->findOneBy("Customers", [
     "first_name" => "Stephanie"
 ]);
 
-// resultat
+// result
 array(1) {
     [0] => array(3) {
         ["FIRST_NAME"] => string(9) "Stephanie"
@@ -218,7 +243,7 @@ $jsonDb->findOneBy("Customers", [
     "first_name" => "an|" . DbJsonBased::CONTAINS // "first_name" must contains "an"
 ], false);
 
-// resultat 1 filter
+// result 1 filter
 array(3) {
     [0] => array(3) {
         ["FIRST_NAME"] => string(6) "Andrea"
@@ -244,7 +269,7 @@ $jsonDb->findOneBy("Customers", [
     "last_name" => "er|" . DbJsonBased::END_BY // AND "last_name" must end by "er"
 ], false);
 
-// resultat 2 filters
+// result 2 filters
 array(1) {
     [0] => array(3) {
         ["FIRST_NAME"] => string(6) "Andrea"
@@ -267,7 +292,7 @@ $jsonDb->findOneBy("Customers", [
     "first_name" => "Stephanie"
 ], false); // case sensitive = false
 
-// resultat
+// result
 array(2) {
     [0] => array(3) {
         ["FIRST_NAME"] => string(9) "Stephanie"
@@ -285,6 +310,14 @@ array(2) {
 ## GET methods
 
 **getFullName()** Return the name of the database's file, with its extension.
+
+**getName()** Return the name of the database's file, without its extension.
+
+**getPath()** Return the name of the database's file, with its entire path and extension.
+
+> **_NOTICE :_**
+> Even if the path is returned, it does not confirm that the database exists. At least, not until you used the createDb() method.
+If your goal is to find out if the file physically exists, please use the static method **isFileExist(string $path)**
 
 **getLastId(string $tableName)** Returns the last used ID from a database's table
 
@@ -309,19 +342,11 @@ array(1) {
 
 $jsonDb->getLastId("Customers")
 
-// resultat
+// result
 int(3)
 ```
 
-**getName()** Return the name of the database's file, without its extension.
-
-**getPath()** Return the name of the database's file, with its entire path and extension.
-
-> **_NOTICE :_**
-> Even if the path is returned, it does not confirm that the database exists. At least, not until you used the createDb() method.
-If your goal is to find out if the file physically exists, please use the static method **isFileExist(string $path)**
-
-**getColumns(string tableName)** Returns all columns with their types from a database's table
+**getColumns(string $tableName)** Returns all columns with their types from a database's table
 
 ```php
 array(4) {
