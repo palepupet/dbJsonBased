@@ -84,6 +84,45 @@ array(1) {
 > **_NOTICE :_**
 > However if you just want to retrieve an element, or act on it, like the TABLENAME, COLUMNS, VALUES, ID some methods, explained below, are more suitables.
 
+You can create as much structure as you want in a file. To add a new structure to an existing file, simply reuse these functions above with a different structure name.
+
+```php
+// Adding the 2nd structure
+$datasStructure2 = new DbJsonBasedStructure("Address", [
+    "name" => DbJsonBasedStructure::TYPE_STRING,
+    "street" => DbJsonBasedStructure::TYPE_STRING,
+    "zip_code" => DbJsonBasedStructure::TYPE_STRING,
+    "city" => DbJsonBasedStructure::TYPE_STRING,
+    ...
+]);
+
+$jsonDb->createDb($datasStructure2);
+
+// Now we have 2 structures into the same file
+array(2) {
+    ["CUSTOMERS"] => array(3) {
+        ["COLUMNS"] => array(4) {
+            ["FIRST_NAME"] => string(6) "string"
+            ["LAST_NAME"] => string(6) "string"
+            ["SIZE"] => string(4) "float"
+            ["AGE"] => string(3) "int"
+        }
+        ["VALUES"] => array(0) {}
+        ["ID"] => NULL
+    },
+    ["ADDRESS"] => array(3) {
+        ["COLUMNS"] => array(4) {
+            ["NAME"] => string(6) "string"
+            ["STREET"] => string(6) "string"
+            ["ZIP_CODE"] => string(6) "string"
+            ["CITY"] => string(6) "string"
+        }
+        ["VALUES"] => array(0) {}
+        ["ID"] => NULL
+    }
+}
+```
+
 **Insert datas :**
 
 > **_NOTICE :_**

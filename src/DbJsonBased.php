@@ -48,9 +48,6 @@ class DbJsonBased
      */
     public function createDb(DbJsonBasedStructureInterface $structure): bool
     {
-        if (Utils::isFileExist($this->dbName)) {
-            throw new DbJsonBasedRuntimeException("The file '{$this->dbName}.json' already exists");
-        }
 
         $newStructure = [
             $structure->getTableName() => [
@@ -59,6 +56,11 @@ class DbJsonBased
                 "ID" => null
             ]
         ];
+
+        if (Utils::isFileExist($this->dbName)) {
+            $previousStructure = Utils::getContentAndDecode($this->dbName);
+            $newStructure = array_merge($previousStructure, $newStructure);
+        }
 
         Utils::encodeAndWriteFile($this->dbName, $newStructure);
 
