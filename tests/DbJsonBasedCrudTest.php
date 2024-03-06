@@ -84,6 +84,111 @@ class DbJsonBasedCrudTest extends DbJsonBasedTest
     }
 
     /**
+     * @covers DbJsonBasedCrudTest::insert
+     */
+    public function testInsertWithTwoStructures()
+    {
+        // Create 1rst structure
+        $structure = new DbJsonBasedStructure(
+            "identity",
+            [
+                "first_name" => DbJsonBasedStructure::TYPE_STRING,
+                "last_name" => DbJsonBasedStructure::TYPE_STRING,
+                "size" => DbJsonBasedStructure::TYPE_FLOAT,
+                "age" => DbJsonBasedStructure::TYPE_INT,
+                "actif" => DbJsonBasedStructure::TYPE_BOOLEAN
+            ]
+        );
+        $this->createDb->createDb($structure);
+
+        $datas = new DbJsonBasedData($this->createDb, "identity", [
+            [
+                "first_name" => "John",
+                "last_name" => "Doe",
+                "size" => 175.50,
+                "age" => 21,
+                "actif" => true
+            ],
+            [
+                "first_name" => "Neo",
+                "last_name" => "Trinitron",
+                "size" => 184.20,
+                "age" => 33,
+                "actif" => false
+            ]
+        ]);
+        $this->createDb->insert($datas);
+
+        // Create 2nd structure
+        $structure2 = new DbJsonBasedStructure(
+            "customer",
+            [
+                "first_name" => DbJsonBasedStructure::TYPE_STRING,
+                "last_name" => DbJsonBasedStructure::TYPE_STRING,
+                "age" => DbJsonBasedStructure::TYPE_INT
+            ]
+        );
+        $this->createDb->createDb($structure2);
+
+        $datas2 = new DbJsonBasedData($this->createDb, "customer", [
+            [
+                "first_name" => "Alan",
+                "last_name" => "Turingstone",
+                "age" => 43,
+            ]
+        ]);
+        $this->createDb->insert($datas2);
+
+        // Check
+        $insertedIdentityDatas = $this->createDb->findAll("identity");
+        $insertedCustomerDatas = $this->createDb->findAll("customer");
+
+        $this->assertIsArray($insertedIdentityDatas);
+        $this->assertCount(2, $insertedIdentityDatas);
+
+        $this->assertCount(6, $this->createDb->getColumns("identity"));
+        $this->assertCount(4, $this->createDb->getColumns("customer"));
+
+        $this->assertIsArray($insertedCustomerDatas);
+        $this->assertCount(1, $insertedCustomerDatas);
+
+        for ($i = 0; $i <= 1; $i++) {
+            $this->assertArrayHasKey("ID", $insertedIdentityDatas[$i]);
+            $this->assertArrayHasKey("FIRST_NAME", $insertedIdentityDatas[$i]);
+            $this->assertArrayHasKey("LAST_NAME", $insertedIdentityDatas[$i]);
+            $this->assertArrayHasKey("SIZE", $insertedIdentityDatas[$i]);
+            $this->assertArrayHasKey("AGE", $insertedIdentityDatas[$i]);
+            $this->assertArrayHasKey("ACTIF", $insertedIdentityDatas[$i]);
+        }
+
+        for ($i = 0; $i < 1; $i++) {
+            $this->assertArrayHasKey("ID", $insertedCustomerDatas[$i]);
+            $this->assertArrayHasKey("FIRST_NAME", $insertedCustomerDatas[$i]);
+            $this->assertArrayHasKey("LAST_NAME", $insertedCustomerDatas[$i]);
+            $this->assertArrayHasKey("AGE", $insertedCustomerDatas[$i]);
+        }
+
+        $this->assertEquals($insertedIdentityDatas[0]["ID"], 0);
+        $this->assertEquals($insertedIdentityDatas[0]["FIRST_NAME"], "John");
+        $this->assertEquals($insertedIdentityDatas[0]["LAST_NAME"], "Doe");
+        $this->assertEquals($insertedIdentityDatas[0]["SIZE"], 175.50);
+        $this->assertEquals($insertedIdentityDatas[0]["AGE"], 21);
+        $this->assertEquals($insertedIdentityDatas[0]["ACTIF"], true);
+
+        $this->assertEquals($insertedIdentityDatas[1]["ID"], 1);
+        $this->assertEquals($insertedIdentityDatas[1]["FIRST_NAME"], "Neo");
+        $this->assertEquals($insertedIdentityDatas[1]["LAST_NAME"], "Trinitron");
+        $this->assertEquals($insertedIdentityDatas[1]["SIZE"], 184.20);
+        $this->assertEquals($insertedIdentityDatas[1]["AGE"], 33);
+        $this->assertEquals($insertedIdentityDatas[1]["ACTIF"], false);
+
+        $this->assertEquals($insertedCustomerDatas[0]["ID"], 0);
+        $this->assertEquals($insertedCustomerDatas[0]["FIRST_NAME"], "Alan");
+        $this->assertEquals($insertedCustomerDatas[0]["LAST_NAME"], "Turingstone");
+        $this->assertEquals($insertedCustomerDatas[0]["AGE"], 43);
+    }
+
+    /**
      * @covers DbJsonBasedCrudTest::remove
      */
     public function testRemoveOneEntity()
@@ -145,6 +250,118 @@ class DbJsonBasedCrudTest extends DbJsonBasedTest
         $this->assertEquals($datasKept[0]["ACTIF"], false);
 
         $this->assertEquals($this->createDb->getLastId("identity"), 2);
+    }
+
+    /**
+     * @covers DbJsonBasedCrudTest::remove
+     */
+    public function testRemoveOneEntityTwoStructure()
+    {
+        // Create 1rst structure
+        $structure = new DbJsonBasedStructure(
+            "identity",
+            [
+                "first_name" => DbJsonBasedStructure::TYPE_STRING,
+                "last_name" => DbJsonBasedStructure::TYPE_STRING,
+                "size" => DbJsonBasedStructure::TYPE_FLOAT,
+                "age" => DbJsonBasedStructure::TYPE_INT,
+                "actif" => DbJsonBasedStructure::TYPE_BOOLEAN
+            ]
+        );
+        $this->createDb->createDb($structure);
+
+        $datas = new DbJsonBasedData($this->createDb, "identity", [
+            [
+                "first_name" => "John",
+                "last_name" => "Doe",
+                "size" => 175.50,
+                "age" => 21,
+                "actif" => true
+            ],
+            [
+                "first_name" => "Neo",
+                "last_name" => "Trinitron",
+                "size" => 184.20,
+                "age" => 33,
+                "actif" => false
+            ]
+        ]);
+        $this->createDb->insert($datas);
+
+        // Create 2nd structure
+        $structure2 = new DbJsonBasedStructure(
+            "customer",
+            [
+                "first_name" => DbJsonBasedStructure::TYPE_STRING,
+                "last_name" => DbJsonBasedStructure::TYPE_STRING,
+                "age" => DbJsonBasedStructure::TYPE_INT
+            ]
+        );
+        $this->createDb->createDb($structure2);
+
+        $datas2 = new DbJsonBasedData($this->createDb, "customer", [
+            [
+                "first_name" => "Alan",
+                "last_name" => "Turingstone",
+                "age" => 43,
+            ],
+            [
+                "first_name" => "Arrakis",
+                "last_name" => "Pandora",
+                "age" => 27,
+            ],
+            [
+                "first_name" => "Arid",
+                "last_name" => "Tropical",
+                "age" => 57,
+            ]
+        ]);
+        $this->createDb->insert($datas2);
+
+        // Remove one of each
+        $result = $this->createDb->remove("identity", 1);
+        $result2 = $this->createDb->remove("customer", 0);
+
+        // Result 1rst
+        $this->assertTrue($result);
+        $datasKept = $this->createDb->findAll("identity");
+
+        $this->assertIsArray($datasKept);
+        $this->assertCount(1, $datasKept);
+
+        $this->assertArrayHasKey("ID", $datasKept[0]);
+        $this->assertArrayHasKey("FIRST_NAME", $datasKept[0]);
+        $this->assertArrayHasKey("LAST_NAME", $datasKept[0]);
+        $this->assertArrayHasKey("SIZE", $datasKept[0]);
+        $this->assertArrayHasKey("AGE", $datasKept[0]);
+
+        $this->assertEquals($datasKept[0]["ID"], 0);
+        $this->assertEquals($datasKept[0]["FIRST_NAME"], "John");
+        $this->assertEquals($datasKept[0]["LAST_NAME"], "Doe");
+        $this->assertEquals($datasKept[0]["SIZE"], 175.50);
+        $this->assertEquals($datasKept[0]["AGE"], 21);
+        $this->assertEquals($datasKept[0]["ACTIF"], true);
+
+        $this->assertEquals($this->createDb->getLastId("identity"), 2);
+
+        // Result 2nd
+        $this->assertTrue($result2);
+        $datasKept = $this->createDb->findAll("customer");
+
+        $this->assertIsArray($datasKept);
+        $this->assertCount(2, $datasKept);
+
+        $this->assertArrayHasKey("ID", $datasKept[0]);
+        $this->assertArrayHasKey("FIRST_NAME", $datasKept[0]);
+        $this->assertArrayHasKey("LAST_NAME", $datasKept[0]);
+        $this->assertArrayHasKey("AGE", $datasKept[0]);
+
+        $this->assertEquals($datasKept[0]["ID"], 1);
+        $this->assertEquals($datasKept[0]["FIRST_NAME"], "Arrakis");
+        $this->assertEquals($datasKept[0]["LAST_NAME"], "Pandora");
+        $this->assertEquals($datasKept[0]["AGE"], 27);
+
+        $this->assertEquals($this->createDb->getLastId("customer"), 3);
     }
 
     /**

@@ -7,7 +7,6 @@ use Palepupet\DbJsonBased\Utils;
 use Palepupet\DbJsonBased\DbJsonBasedStructure;
 use Palepupet\DbJsonBased\exceptions\DbJsonBasedInvalidArgumentException;
 use Palepupet\DbJsonBased\Tests\DbJsonBasedTest;
-use Palepupet\DbJsonBased\exceptions\DbJsonBasedRuntimeException;
 
 
 class DbJsonBasedFileTest extends DbJsonBasedTest
@@ -47,22 +46,6 @@ class DbJsonBasedFileTest extends DbJsonBasedTest
         // Check the file exists after creation
         $this->assertFileExists($this->createDbDirectory . ".json");
         $this->assertTrue($res);
-    }
-
-    /**
-     * @covers DbJsonBasedFileTest::createDb
-     */
-    public function testCreateDbIfFileAlreadyExists()
-    {
-        // First creation
-        $structure = new DbJsonBasedStructure("tableName", [
-            "value1" => DbJsonBasedStructure::TYPE_STRING
-        ]);
-        $this->createDb->createDb($structure);
-
-        // If the file already exists throw exception
-        $this->expectException(DbJsonBasedRunTimeException::class);
-        $this->createDb->createDb($structure);
     }
 
     /**
@@ -110,5 +93,70 @@ class DbJsonBasedFileTest extends DbJsonBasedTest
 
         $this->assertIsNotArray($fetchDatas["IDENTITY"]["ID"]);
         $this->assertEquals($fetchDatas["IDENTITY"]["ID"], null);
+    }
+
+    /**
+     * @covers DbJsonBasedFileTest::createDb
+     */
+    public function testAddAnotherStructure()
+    {
+        // Create the 1rst structure
+        $structure = new DbJsonBasedStructure(
+            "identity",
+            [
+                "first_name" => DbJsonBasedStructure::TYPE_STRING,
+                "last_name" => DbJsonBasedStructure::TYPE_STRING,
+                "size" => DbJsonBasedStructure::TYPE_FLOAT,
+                "age" => DbJsonBasedStructure::TYPE_INT
+            ]
+        );
+        $this->createDb->createDb($structure);
+
+        // Create the 2nd structure
+        $structure = new DbJsonBasedStructure(
+            "customer",
+            [
+                "first_name" => DbJsonBasedStructure::TYPE_STRING,
+                "last_name" => DbJsonBasedStructure::TYPE_STRING,
+                "size" => DbJsonBasedStructure::TYPE_FLOAT,
+                "actif" => DbJsonBasedStructure::TYPE_BOOLEAN,
+                "age" => DbJsonBasedStructure::TYPE_INT
+            ]
+        );
+        $this->createDb->createDb($structure);
+
+        $allStructures = Utils::getContentAndDecode($this->createDb->getPath());
+
+        // Check
+        $this->assertCount(2, $allStructures);
+        $this->assertArrayHasKey("IDENTITY", $allStructures);
+        $this->assertArrayHasKey("CUSTOMER", $allStructures);
+
+        $this->assertCount(3, $allStructures["IDENTITY"]);
+        $this->assertArrayHasKey("COLUMNS", $allStructures["IDENTITY"]);
+        $this->assertArrayHasKey("VALUES", $allStructures["IDENTITY"]);
+        $this->assertArrayHasKey("ID", $allStructures["IDENTITY"]);
+
+        $this->assertCount(3, $allStructures["CUSTOMER"]);
+        $this->assertArrayHasKey("COLUMNS", $allStructures["CUSTOMER"]);
+        $this->assertArrayHasKey("VALUES", $allStructures["CUSTOMER"]);
+        $this->assertArrayHasKey("ID", $allStructures["CUSTOMER"]);
+
+        $this->assertArrayHasKey("FIRST_NAME", $allStructures["IDENTITY"]["COLUMNS"]);
+        $this->assertArrayHasKey("LAST_NAME", $allStructures["IDENTITY"]["COLUMNS"]);
+        $this->assertArrayHasKey("SIZE", $allStructures["IDENTITY"]["COLUMNS"]);
+        $this->assertArrayHasKey("AGE", $allStructures["IDENTITY"]["COLUMNS"]);
+
+        $this->assertArrayHasKey("FIRST_NAME", $allStructures["CUSTOMER"]["COLUMNS"]);
+        $this->assertArrayHasKey("LAST_NAME", $allStructures["CUSTOMER"]["COLUMNS"]);
+        $this->assertArrayHasKey("SIZE", $allStructures["CUSTOMER"]["COLUMNS"]);
+        $this->assertArrayHasKey("AGE", $allStructures["CUSTOMER"]["COLUMNS"]);
+        $this->assertArrayHasKey("ACTIF", $allStructures["CUSTOMER"]["COLUMNS"]);
+
+        $this->assertCount(0, $allStructures["IDENTITY"]["VALUES"]);
+        $this->assertCount(0, $allStructures["CUSTOMER"]["VALUES"]);
+
+        $this->assertEquals(0, $allStructures["IDENTITY"]["ID"]);
+        $this->assertEquals(0, $allStructures["CUSTOMER"]["ID"]);
     }
 }
