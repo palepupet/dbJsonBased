@@ -149,6 +149,60 @@ $datas = new DbJsonBasedData($jsonDb, "Customers", [
 $jsonDb->insert($datas);
 ```
 
+**Update datas :**
+
+**update(DbJsonBasedDataInterface \$datas)** Update the datas only put in arguments. The other datas will remain unchanged. The update uses **DbJsonBasedDataInterface** as for creating the database structure. This allows to use the same checks on the table, the fields... For updating datas you must therefore also use the **DbJsonBasedData** class.
+
+> **_NOTICE :_**
+> You absolutely must provide the entity ID (with the datas) to make the modification. Without it, it will be impossible to find the entity to modify.
+
+```php
+// 'Entity' datas
+["first_name" => "John", "last_name" => "Doe", "size" => 175.50, "age" => 21],
+["first_name" => "Neo", "last_name" => "Trinitron", "size" => 184.20, "age" => 33],
+["first_name" => "Alan", "last_name" => "Turingstone", "size" => 170.30, "age" => 45],
+["first_name" => "Luke", "last_name" => "Skylogger", "size" => 173.80, "age" => 18]
+
+// Update the entity with the ID 1
+$datasToUpdate = new DbJsonBasedData($jsonDb, "identity", [
+    [
+        "last_name" => "Turingstone",
+        "age" => 55,
+        "id" => 1
+    ]
+]);
+$jsonDb->update($datasToUpdate);
+
+// result
+["first_name" => "John", "last_name" => "Doe", "size" => 175.50, "age" => 21],
+["first_name" => "Neo", "last_name" => "Turingstone", "size" => 184.20, "age" => 55], // modified datas
+["first_name" => "Alan", "last_name" => "Turingstone", "size" => 170.30, "age" => 45],
+["first_name" => "Luke", "last_name" => "Skylogger", "size" => 173.80, "age" => 18]
+```
+
+If you have several entities to modify, you can add as many array as necessary. Each one containing the modifications to be made.
+
+```php
+// Update multiple entities
+$datasToUpdate = new DbJsonBasedData($jsonDb, "identity", [
+    [
+        "first_name" => "Neo",
+        "age" => 45,
+        "id" => 0
+    ],
+    [
+        "last_name" => "Doe",
+        "size" => 32,
+        "id" => 1
+    ],
+    [
+        "age" => 25,
+        "id" => 2
+    ]
+]);
+$jsonDb->update($datasToUpdate);
+```
+
 **Remove datas :**
 
 **remove(string \$tableName, ?int \$idToRemove, bool \$removeAllTableNameValues = false)**

@@ -347,6 +347,61 @@ class DbJsonBased
     }
 
     /**
+     * update
+     * 
+     * Update values by replacing them into the BDD
+     *
+     * @param DbJsonBasedDataInterface $datas Datas to be update
+     * @throws DbJsonBasedInvalidArgumentException
+     * @return bool
+     */
+    public function update(DbJsonBasedDataInterface $datas): bool
+    {
+        $modifiedDatas = $datas->datas;
+
+        // If datas are empty
+        if (empty($modifiedDatas)) {
+            throw new DbJsonBasedInvalidArgumentException("Datas cannot be empty");
+        }
+
+        // Id check
+        foreach ($modifiedDatas as &$modifiedData) {
+            // Harmonize given keys into uppercase
+            $keysUpperCase = array_map("strtoupper", array_keys($modifiedData));
+            $valuesLowerCase = $modifiedData;
+            $modifiedData = array_combine($keysUpperCase, $valuesLowerCase);
+
+            if (!array_key_exists("ID", $modifiedData)) {
+                throw new DbJsonBasedInvalidArgumentException("You must provide the entity ID to modifiy");
+            }
+        }
+
+        // Get all current datas
+        $allDatas = $this->findAll($datas->tableName);
+
+        foreach ($modifiedDatas as &$modifiedData) {
+            // Update new values if ID match
+            $id = $modifiedData["ID"];
+            foreach ($allDatas as &$data) {
+                if ($data["ID"] === $id) {
+                    foreach ($modifiedData as $key => $value) {
+                        if ($key !== "ID") {
+                            $data[$key] = $value;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Get actual values and update them into bdd's file
+        $allDatabaseDatas = Utils::getContentAndDecode($this->dbName);
+        $allDatabaseDatas[strtoupper($datas->tableName)]["VALUES"] = $allDatas;
+        Utils::encodeAndWriteFile($this->dbName, $allDatabaseDatas);
+
+        return true;
+    }
+
+    /**
      * getVerifiedTable
      * 
      * Do some checks and retrun the entire table
