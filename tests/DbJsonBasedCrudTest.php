@@ -559,4 +559,544 @@ class DbJsonBasedCrudTest extends DbJsonBasedTest
         $this->expectException(DbJsonBasedInvalidArgumentException::class);
         $this->createDb->remove("identity", 1, true);
     }
+
+    /**
+     * @covers DbJsonBasedCrudTest::update
+     */
+    public function testUpdateEmptyData()
+    {
+        // Create file
+        $structure = new DbJsonBasedStructure(
+            "identity",
+            [
+                "first_name" => DbJsonBasedStructure::TYPE_STRING,
+                "last_name" => DbJsonBasedStructure::TYPE_STRING,
+                "size" => DbJsonBasedStructure::TYPE_FLOAT,
+                "age" => DbJsonBasedStructure::TYPE_INT,
+                "actif" => DbJsonBasedStructure::TYPE_BOOLEAN
+            ]
+        );
+        $this->createDb->createDb($structure);
+
+        // Add datas
+        $datas = new DbJsonBasedData($this->createDb, "identity", [
+            [
+                "first_name" => "John",
+                "last_name" => "Doe",
+                "size" => 175.50,
+                "age" => 21,
+                "actif" => true
+            ]
+        ]);
+        $this->createDb->insert($datas);
+
+        // Update
+        $datasToUpdate = new DbJsonBasedData($this->createDb, "identity", []);
+
+        $this->expectException(DbJsonBasedInvalidArgumentException::class);
+        $this->createDb->update($datasToUpdate);
+    }
+
+    /**
+     * @covers DbJsonBasedStructureTest::update
+     */
+    public function testUpdateWithoutId()
+    {
+        // Create file
+        $structure = new DbJsonBasedStructure(
+            "identity",
+            [
+                "first_name" => DbJsonBasedStructure::TYPE_STRING,
+                "last_name" => DbJsonBasedStructure::TYPE_STRING,
+                "size" => DbJsonBasedStructure::TYPE_FLOAT,
+                "age" => DbJsonBasedStructure::TYPE_INT,
+                "actif" => DbJsonBasedStructure::TYPE_BOOLEAN
+            ]
+        );
+        $this->createDb->createDb($structure);
+
+        // Add datas
+        $datas = new DbJsonBasedData($this->createDb, "identity", [
+            [
+                "first_name" => "John",
+                "last_name" => "Doe",
+                "size" => 175.50,
+                "age" => 21,
+                "actif" => true
+            ],
+            [
+                "first_name" => "Neo",
+                "last_name" => "Trinitron",
+                "size" => 184.20,
+                "age" => 33,
+                "actif" => false
+            ]
+        ]);
+        $this->createDb->insert($datas);
+
+        // Update
+        $datasToUpdate = new DbJsonBasedData($this->createDb, "identity", [
+            [
+                "last_name" => "Turingstone",
+            ]
+        ]);
+
+        $this->expectException(DbJsonBasedInvalidArgumentException::class);
+        $this->createDb->update($datasToUpdate);
+    }
+
+    /**
+     * @covers DbJsonBasedCrudTest::update
+     */
+    public function testUpdateOneFieldOneStructure()
+    {
+        // Create file
+        $structure = new DbJsonBasedStructure(
+            "identity",
+            [
+                "first_name" => DbJsonBasedStructure::TYPE_STRING,
+                "last_name" => DbJsonBasedStructure::TYPE_STRING,
+                "size" => DbJsonBasedStructure::TYPE_FLOAT,
+                "age" => DbJsonBasedStructure::TYPE_INT,
+                "actif" => DbJsonBasedStructure::TYPE_BOOLEAN
+            ]
+        );
+        $this->createDb->createDb($structure);
+
+        // Add datas
+        $datas = new DbJsonBasedData($this->createDb, "identity", [
+            [
+                "first_name" => "John",
+                "last_name" => "Doe",
+                "size" => 175.50,
+                "age" => 21,
+                "actif" => true
+            ],
+            [
+                "first_name" => "Neo",
+                "last_name" => "Trinitron",
+                "size" => 184.20,
+                "age" => 33,
+                "actif" => false
+            ]
+        ]);
+        $this->createDb->insert($datas);
+
+        // Update
+        $datasToUpdate = new DbJsonBasedData($this->createDb, "identity", [
+            [
+                "last_name" => "Turingstone",
+                "id" => 1
+            ]
+        ]);
+        $updated = $this->createDb->update($datasToUpdate);
+
+        // Check
+        $this->assertTrue($updated);
+
+        $updatedData = $this->createDb->findAll("identity");
+        $this->assertCount(6, $this->createDb->getColumns("identity"));
+
+        // 1rst the same
+        $this->assertIsArray($updatedData);
+        $this->assertCount(2, $updatedData);
+
+        $this->assertArrayHasKey("ID", $updatedData[0]);
+        $this->assertArrayHasKey("FIRST_NAME", $updatedData[0]);
+        $this->assertArrayHasKey("LAST_NAME", $updatedData[0]);
+        $this->assertArrayHasKey("SIZE", $updatedData[0]);
+        $this->assertArrayHasKey("AGE", $updatedData[0]);
+
+        $this->assertEquals($updatedData[0]["ID"], 0);
+        $this->assertEquals($updatedData[0]["FIRST_NAME"], "John");
+        $this->assertEquals($updatedData[0]["LAST_NAME"], "Doe");
+        $this->assertEquals($updatedData[0]["SIZE"], 175.50);
+        $this->assertEquals($updatedData[0]["AGE"], 21);
+        $this->assertEquals($updatedData[0]["ACTIF"], true);
+
+        $this->assertEquals($this->createDb->getLastId("identity"), 2);
+
+        // 2nd modified
+        $this->assertArrayHasKey("ID", $updatedData[1]);
+        $this->assertArrayHasKey("FIRST_NAME", $updatedData[1]);
+        $this->assertArrayHasKey("LAST_NAME", $updatedData[1]);
+        $this->assertArrayHasKey("SIZE", $updatedData[1]);
+        $this->assertArrayHasKey("AGE", $updatedData[1]);
+
+        $this->assertEquals($updatedData[1]["ID"], 1);
+        $this->assertEquals($updatedData[1]["FIRST_NAME"], "Neo");
+        $this->assertEquals($updatedData[1]["LAST_NAME"], "Turingstone");
+        $this->assertEquals($updatedData[1]["SIZE"], 184.20);
+        $this->assertEquals($updatedData[1]["AGE"], 33);
+        $this->assertEquals($updatedData[1]["ACTIF"], false);
+    }
+
+    /**
+     * @covers DbJsonBasedCrudTest::update
+     */
+    public function testUpdateMultipleFieldsOneStructure()
+    {
+        // Create file
+        $structure = new DbJsonBasedStructure(
+            "identity",
+            [
+                "first_name" => DbJsonBasedStructure::TYPE_STRING,
+                "last_name" => DbJsonBasedStructure::TYPE_STRING,
+                "size" => DbJsonBasedStructure::TYPE_FLOAT,
+                "age" => DbJsonBasedStructure::TYPE_INT,
+                "actif" => DbJsonBasedStructure::TYPE_BOOLEAN
+            ]
+        );
+        $this->createDb->createDb($structure);
+
+        // Add datas
+        $datas = new DbJsonBasedData($this->createDb, "identity", [
+            [
+                "first_name" => "John",
+                "last_name" => "Doe",
+                "size" => 175.50,
+                "age" => 21,
+                "actif" => true
+            ],
+            [
+                "first_name" => "Neo",
+                "last_name" => "Trinitron",
+                "size" => 184.20,
+                "age" => 33,
+                "actif" => false
+            ]
+        ]);
+        $this->createDb->insert($datas);
+
+        // Update
+        $datasToUpdate = new DbJsonBasedData($this->createDb, "identity", [
+            [
+                "last_name" => "Turingstone",
+                "id" => 0,
+                "age" => 32
+            ],
+            [
+                "id" => 1,
+                "last_name" => "Doe",
+                "actif" => true
+            ]
+        ]);
+        $updated = $this->createDb->update($datasToUpdate);
+
+        // Check
+        $this->assertTrue($updated);
+
+        $updatedData = $this->createDb->findAll("identity");
+
+        $this->assertCount(6, $this->createDb->getColumns("identity"));
+
+        $this->assertIsArray($updatedData);
+        $this->assertCount(2, $updatedData);
+
+        for ($i = 0; $i <= 1; $i++) {
+            $this->assertArrayHasKey("ID", $updatedData[$i]);
+            $this->assertArrayHasKey("FIRST_NAME", $updatedData[$i]);
+            $this->assertArrayHasKey("LAST_NAME", $updatedData[$i]);
+            $this->assertArrayHasKey("SIZE", $updatedData[$i]);
+            $this->assertArrayHasKey("AGE", $updatedData[$i]);
+        }
+
+        // 1rst modified entity
+        $this->assertEquals($updatedData[0]["ID"], 0);
+        $this->assertEquals($updatedData[0]["FIRST_NAME"], "John");
+        $this->assertEquals($updatedData[0]["LAST_NAME"], "Turingstone");
+        $this->assertEquals($updatedData[0]["SIZE"], 175.50);
+        $this->assertEquals($updatedData[0]["AGE"], 32);
+        $this->assertEquals($updatedData[0]["ACTIF"], true);
+
+        // 2nd modified entity
+        $this->assertEquals($updatedData[1]["ID"], 1);
+        $this->assertEquals($updatedData[1]["FIRST_NAME"], "Neo");
+        $this->assertEquals($updatedData[1]["LAST_NAME"], "Doe");
+        $this->assertEquals($updatedData[1]["SIZE"], 184.20);
+        $this->assertEquals($updatedData[1]["AGE"], 33);
+        $this->assertEquals($updatedData[1]["ACTIF"], true);
+    }
+
+    /**
+     * @covers DbJsonBasedStructureTest::update
+     */
+    public function testUpdateOneFieldMultipleStructure()
+    {
+        // Create 1rst structure
+        $structure = new DbJsonBasedStructure(
+            "identity",
+            [
+                "first_name" => DbJsonBasedStructure::TYPE_STRING,
+                "last_name" => DbJsonBasedStructure::TYPE_STRING,
+                "size" => DbJsonBasedStructure::TYPE_FLOAT,
+                "age" => DbJsonBasedStructure::TYPE_INT,
+                "actif" => DbJsonBasedStructure::TYPE_BOOLEAN
+            ]
+        );
+        $this->createDb->createDb($structure);
+
+        $datas = new DbJsonBasedData($this->createDb, "identity", [
+            [
+                "first_name" => "John",
+                "last_name" => "Doe",
+                "size" => 175.50,
+                "age" => 21,
+                "actif" => true
+            ],
+            [
+                "first_name" => "Neo",
+                "last_name" => "Trinitron",
+                "size" => 184.20,
+                "age" => 33,
+                "actif" => false
+            ]
+        ]);
+        $this->createDb->insert($datas);
+
+        // Create 2nd structure
+        $structure2 = new DbJsonBasedStructure(
+            "customer",
+            [
+                "first_name" => DbJsonBasedStructure::TYPE_STRING,
+                "last_name" => DbJsonBasedStructure::TYPE_STRING,
+                "age" => DbJsonBasedStructure::TYPE_INT
+            ]
+        );
+        $this->createDb->createDb($structure2);
+
+        $datas2 = new DbJsonBasedData($this->createDb, "customer", [
+            [
+                "first_name" => "Alan",
+                "last_name" => "Turingstone",
+                "age" => 43,
+            ]
+        ]);
+        $this->createDb->insert($datas2);
+
+        // Update 1rst structure
+        $datasToUpdate = new DbJsonBasedData($this->createDb, "identity", [
+            [
+                "last_name" => "Turingstone",
+                "id" => 0,
+                "age" => 32
+            ],
+        ]);
+        $updated = $this->createDb->update($datasToUpdate);
+
+        // Update 2nd structure
+        $datasToUpdate2 = new DbJsonBasedData($this->createDb, "customer", [
+            [
+                "first_name" => "Neo",
+                "id" => 0,
+                "age" => 23
+            ],
+        ]);
+        $updated2 = $this->createDb->update($datasToUpdate2);
+
+        // Check
+        $this->assertTrue($updated);
+        $this->assertTrue($updated2);
+
+        $updatedIdentityData = $this->createDb->findAll("identity");
+        $updatedCustomerData = $this->createDb->findAll("customer");
+
+        $this->assertIsArray($updatedIdentityData);
+        $this->assertCount(2, $updatedIdentityData);
+
+        $this->assertIsArray($updatedCustomerData);
+        $this->assertCount(1, $updatedCustomerData);
+
+        $this->assertCount(6, $this->createDb->getColumns("identity"));
+        $this->assertCount(4, $this->createDb->getColumns("customer"));
+
+        // 1rst modified entity
+        for ($i = 0; $i <= 1; $i++) {
+            $this->assertArrayHasKey("ID", $updatedIdentityData[$i]);
+            $this->assertArrayHasKey("FIRST_NAME", $updatedIdentityData[$i]);
+            $this->assertArrayHasKey("LAST_NAME", $updatedIdentityData[$i]);
+            $this->assertArrayHasKey("SIZE", $updatedIdentityData[$i]);
+            $this->assertArrayHasKey("AGE", $updatedIdentityData[$i]);
+        }
+
+        $this->assertEquals($updatedIdentityData[0]["ID"], 0);
+        $this->assertEquals($updatedIdentityData[0]["FIRST_NAME"], "John");
+        $this->assertEquals($updatedIdentityData[0]["LAST_NAME"], "Turingstone");
+        $this->assertEquals($updatedIdentityData[0]["SIZE"], 175.50);
+        $this->assertEquals($updatedIdentityData[0]["AGE"], 32);
+        $this->assertEquals($updatedIdentityData[0]["ACTIF"], true);
+
+        // 2nd modified entity
+        $this->assertArrayHasKey("ID", $updatedCustomerData[0]);
+        $this->assertArrayHasKey("FIRST_NAME", $updatedCustomerData[0]);
+        $this->assertArrayHasKey("LAST_NAME", $updatedCustomerData[0]);
+        $this->assertArrayHasKey("AGE", $updatedCustomerData[0]);
+
+        $this->assertEquals($updatedCustomerData[0]["ID"], 0);
+        $this->assertEquals($updatedCustomerData[0]["FIRST_NAME"], "Neo");
+        $this->assertEquals($updatedCustomerData[0]["LAST_NAME"], "Turingstone");
+        $this->assertEquals($updatedCustomerData[0]["AGE"], 23);
+    }
+
+    /**
+     * @covers DbJsonBasedStructureTest::update
+     */
+    public function testUpdateMultipleFieldsMultipleStructure()
+    {
+        // Create 1rst structure
+        $structure = new DbJsonBasedStructure(
+            "identity",
+            [
+                "first_name" => DbJsonBasedStructure::TYPE_STRING,
+                "last_name" => DbJsonBasedStructure::TYPE_STRING,
+                "size" => DbJsonBasedStructure::TYPE_FLOAT,
+                "age" => DbJsonBasedStructure::TYPE_INT,
+                "actif" => DbJsonBasedStructure::TYPE_BOOLEAN
+            ]
+        );
+        $this->createDb->createDb($structure);
+
+        $datas = new DbJsonBasedData($this->createDb, "identity", [
+            [
+                "first_name" => "John",
+                "last_name" => "Doe",
+                "size" => 175.50,
+                "age" => 21,
+                "actif" => true
+            ],
+            [
+                "first_name" => "Neo",
+                "last_name" => "Trinitron",
+                "size" => 184.20,
+                "age" => 33,
+                "actif" => false
+            ]
+        ]);
+        $this->createDb->insert($datas);
+
+        // Create 2nd structure
+        $structure2 = new DbJsonBasedStructure(
+            "customer",
+            [
+                "first_name" => DbJsonBasedStructure::TYPE_STRING,
+                "last_name" => DbJsonBasedStructure::TYPE_STRING,
+                "age" => DbJsonBasedStructure::TYPE_INT
+            ]
+        );
+        $this->createDb->createDb($structure2);
+
+        $datas2 = new DbJsonBasedData($this->createDb, "customer", [
+            [
+                "first_name" => "Alan",
+                "last_name" => "Turingstone",
+                "age" => 43,
+            ],
+            [
+                "first_name" => "Arrakis",
+                "last_name" => "Pandora",
+                "age" => 27,
+            ],
+            [
+                "first_name" => "Arid",
+                "last_name" => "Tropical",
+                "age" => 57,
+            ]
+        ]);
+        $this->createDb->insert($datas2);
+
+        // Update 1rst structure
+        $datasToUpdate = new DbJsonBasedData($this->createDb, "identity", [
+            [
+                "last_name" => "Turingstone",
+                "id" => 0,
+                "age" => 32
+            ],
+            [
+                "id" => 1,
+                "first_name" => "James",
+                "age" => 21,
+                "actif" => true
+            ]
+        ]);
+        $updated = $this->createDb->update($datasToUpdate);
+
+        // Update 2nd structure
+        $datasToUpdate2 = new DbJsonBasedData($this->createDb, "customer", [
+            [
+                "first_name" => "Neo",
+                "id" => 0,
+                "age" => 23
+            ],
+            [
+                "id" => 1,
+                "first_name" => "Bond",
+                "age" => 25,
+            ],
+            [
+                "age" => 12,
+                "id" => 2
+            ]
+        ]);
+        $updated2 = $this->createDb->update($datasToUpdate2);
+
+        // Check
+        $this->assertTrue($updated);
+        $this->assertTrue($updated2);
+
+        $updatedIdentityData = $this->createDb->findAll("identity");
+        $updatedCustomerData = $this->createDb->findAll("customer");
+
+        $this->assertIsArray($updatedIdentityData);
+        $this->assertCount(2, $updatedIdentityData);
+
+        $this->assertIsArray($updatedCustomerData);
+        $this->assertCount(3, $updatedCustomerData);
+
+        $this->assertCount(6, $this->createDb->getColumns("identity"));
+        $this->assertCount(4, $this->createDb->getColumns("customer"));
+
+        // 1rst modified entity
+        for ($i = 0; $i <= 1; $i++) {
+            $this->assertArrayHasKey("ID", $updatedIdentityData[$i]);
+            $this->assertArrayHasKey("FIRST_NAME", $updatedIdentityData[$i]);
+            $this->assertArrayHasKey("LAST_NAME", $updatedIdentityData[$i]);
+            $this->assertArrayHasKey("SIZE", $updatedIdentityData[$i]);
+            $this->assertArrayHasKey("AGE", $updatedIdentityData[$i]);
+        }
+
+        $this->assertEquals($updatedIdentityData[0]["ID"], 0);
+        $this->assertEquals($updatedIdentityData[0]["FIRST_NAME"], "John");
+        $this->assertEquals($updatedIdentityData[0]["LAST_NAME"], "Turingstone");
+        $this->assertEquals($updatedIdentityData[0]["SIZE"], 175.50);
+        $this->assertEquals($updatedIdentityData[0]["AGE"], 32);
+        $this->assertEquals($updatedIdentityData[0]["ACTIF"], true);
+
+        $this->assertEquals($updatedIdentityData[1]["ID"], 1);
+        $this->assertEquals($updatedIdentityData[1]["FIRST_NAME"], "James");
+        $this->assertEquals($updatedIdentityData[1]["LAST_NAME"], "Trinitron");
+        $this->assertEquals($updatedIdentityData[1]["SIZE"], 184.20);
+        $this->assertEquals($updatedIdentityData[1]["AGE"], 21);
+        $this->assertEquals($updatedIdentityData[1]["ACTIF"], true);
+
+        // 2nd modified entity
+        $this->assertArrayHasKey("ID", $updatedCustomerData[0]);
+        $this->assertArrayHasKey("FIRST_NAME", $updatedCustomerData[0]);
+        $this->assertArrayHasKey("LAST_NAME", $updatedCustomerData[0]);
+        $this->assertArrayHasKey("AGE", $updatedCustomerData[0]);
+
+        $this->assertEquals($updatedCustomerData[0]["ID"], 0);
+        $this->assertEquals($updatedCustomerData[0]["FIRST_NAME"], "Neo");
+        $this->assertEquals($updatedCustomerData[0]["LAST_NAME"], "Turingstone");
+        $this->assertEquals($updatedCustomerData[0]["AGE"], 23);
+
+        $this->assertEquals($updatedCustomerData[1]["ID"], 1);
+        $this->assertEquals($updatedCustomerData[1]["FIRST_NAME"], "Bond");
+        $this->assertEquals($updatedCustomerData[1]["LAST_NAME"], "Pandora");
+        $this->assertEquals($updatedCustomerData[1]["AGE"], 25);
+
+        $this->assertEquals($updatedCustomerData[2]["ID"], 2);
+        $this->assertEquals($updatedCustomerData[2]["FIRST_NAME"], "Arid");
+        $this->assertEquals($updatedCustomerData[2]["LAST_NAME"], "Tropical");
+        $this->assertEquals($updatedCustomerData[2]["AGE"], 12);
+    }
 }
