@@ -3,6 +3,7 @@
 namespace Palepupet\DbJsonBased;
 
 use Palepupet\DbJsonBased\exceptions\DbJsonBasedInvalidArgumentException;
+use Palepupet\DbJsonBased\exceptions\DbJsonBasedInvalidTypeException;
 
 class DbJsonBasedStructure implements DbJsonBasedStructureInterface
 {
@@ -28,16 +29,12 @@ class DbJsonBasedStructure implements DbJsonBasedStructureInterface
      * 
      * exemple :
      * 
-     * [
+     * ["NAME" => "string", "PRICE" => "float"]
      * 
-     * "NAME" => "string",
+     * Valid types are **string**, **int**, **float** and **boolean** only. You can use the class constants provided: **TYPE_BOOLEAN | TYPE_FLOAT | TYPE_INT | TYPE_STRING**
      * 
-     * "PRICE" => "float"
-     * 
-     * ]
-     * 
-     * 
-     * Valid types are **string**, **int**, **float** and **boolean** only
+     * @throws DbJsonBasedInvalidArgumentException
+     * @throws DbJsonBasedInvalidTypeException
      */
     public function __construct(private string $tableName, private array $columns)
     {
@@ -51,6 +48,7 @@ class DbJsonBasedStructure implements DbJsonBasedStructureInterface
      * Set the name of the future table
      *
      * @param string $tableName Name of the future table
+     * @throws DbJsonBasedInvalidArgumentException
      * @return void
      */
     public function setTableName(string $tableName): void
@@ -80,18 +78,17 @@ class DbJsonBasedStructure implements DbJsonBasedStructureInterface
      * Set the names/types of the future columns
      *
      * @param array $columns Names/Types of the future columns
+     * @throws DbJsonBasedInvalidArgumentException
      * @return void
      */
     public function setColumns(array $columns): void
     {
         // Format datas
-        $keysUpperCase = array_map("strtoupper", array_keys($columns));
-        $valuesLowerCase = array_map("strtolower", $columns);
-        $resultArray = array_combine($keysUpperCase, $valuesLowerCase);
+        $resultArray = Utils::harmonizeKeyCase($columns, "strtoupper");
 
         // Adding ID if it is not provided
         if (!isset($resultArray["ID"])) {
-            $resultArray = $resultArray += self::ID_ARRAY;
+            $resultArray += self::ID_ARRAY;
         }
 
         // Modifying ID if it is not well typed
@@ -122,6 +119,7 @@ class DbJsonBasedStructure implements DbJsonBasedStructureInterface
      * Do some checks to validate the structure datas
      *
      * @param array $columns
+     * @throws DbJsonBasedInvalidArgumentException
      * @return void
      */
     private function validateDatas(array $columns): void
@@ -137,7 +135,7 @@ class DbJsonBasedStructure implements DbJsonBasedStructureInterface
         foreach ($columns as $key => $type) {
             // Check valid types
             if (!in_array($type, $allowedTypes)) {
-                throw new DbJsonBasedInvalidArgumentException("Only '" . implode(", ", $allowedTypes) . "' types are accepted. '$type' is not a valid type");
+                throw new DbJsonBasedInvalidTypeException("Only '" . implode(", ", $allowedTypes) . "' types are accepted. '$type' is not a valid type");
             }
 
             // Check integrity of columns

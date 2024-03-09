@@ -11,7 +11,7 @@ use Palepupet\DbJsonBased\exceptions\DbJsonBasedInvalidArgumentException;
 class DbJsonBasedFindingTest extends DbJsonBasedTest
 {
     /**
-     * @covers DbJsonBasedCrudTest::findAll
+     * @covers DbJsonBasedFindingTest::findAll
      */
     public function testFindAll()
     {
@@ -72,7 +72,7 @@ class DbJsonBasedFindingTest extends DbJsonBasedTest
     }
 
     /**
-     * @covers DbJsonBasedCrudTest::findAll
+     * @covers DbJsonBasedFindingTest::findAll
      */
     public function testFindAllHasTableName()
     {
@@ -81,7 +81,7 @@ class DbJsonBasedFindingTest extends DbJsonBasedTest
     }
 
     /**
-     * @covers DbJsonBasedCrudTest::findAll
+     * @covers DbJsonBasedFindingTest::findAll
      */
     public function testFindAllHasExistingTableName()
     {
@@ -90,7 +90,16 @@ class DbJsonBasedFindingTest extends DbJsonBasedTest
     }
 
     /**
-     * @covers DbJsonBasedCrudTest::findOne
+     * @covers DbJsonBasedFindingTest::findOne
+     */
+    public function testFindOneIdDoesNotExist()
+    {
+        $this->expectException(DbJsonBasedInvalidArgumentException::class);
+        $this->db->findOne("identity", 100);
+    }
+
+    /**
+     * @covers DbJsonBasedFindingTest::findOne
      */
     public function testFindOne()
     {
@@ -130,7 +139,7 @@ class DbJsonBasedFindingTest extends DbJsonBasedTest
     }
 
     /**
-     * @covers DbJsonBasedCrudTest::findOne
+     * @covers DbJsonBasedFindingTest::findOne
      */
     public function testFindOneHasTableName()
     {
@@ -139,7 +148,7 @@ class DbJsonBasedFindingTest extends DbJsonBasedTest
     }
 
     /**
-     * @covers DbJsonBasedCrudTest::findOne
+     * @covers DbJsonBasedFindingTest::findOne
      */
     public function testFindOneHasExistingTableName()
     {
@@ -148,16 +157,7 @@ class DbJsonBasedFindingTest extends DbJsonBasedTest
     }
 
     /**
-     * @covers DbJsonBasedCrudTest::findOne
-     */
-    public function testFindOneReturnEmptyArrayIfIdDoesNotExists()
-    {
-        $datasHouses0 = $this->db->findOne("houses", 10);
-        $this->assertEmpty($datasHouses0);
-    }
-
-    /**
-     * @covers DbJsonBasedCrudTest::findOneBy
+     * @covers DbJsonBasedFindingTest::findOneBy
      */
     public function testFindOneBy()
     {
@@ -170,8 +170,6 @@ class DbJsonBasedFindingTest extends DbJsonBasedTest
             ]
         );
         $this->createDb->createDb($structure);
-
-
 
         // Inserting datas
         $this->createDb->insert(new DbJsonBasedData($this->createDb, "person", [
@@ -199,7 +197,7 @@ class DbJsonBasedFindingTest extends DbJsonBasedTest
     }
 
     /**
-     * @covers DbJsonBasedCrudTest::findOneBy
+     * @covers DbJsonBasedFindingTest::findOneBy
      */
     public function testFindOneByCaseInsensitive()
     {
@@ -245,7 +243,7 @@ class DbJsonBasedFindingTest extends DbJsonBasedTest
     }
 
     /**
-     * @covers DbJsonBasedCrudTest::findOneBy
+     * @covers DbJsonBasedFindingTest::findOneBy
      */
     public function testFindOneByReturnEmpty()
     {
@@ -273,7 +271,7 @@ class DbJsonBasedFindingTest extends DbJsonBasedTest
     }
 
     /**
-     * @covers DbJsonBasedCrudTest::findOneBy
+     * @covers DbJsonBasedFindingTest::findOneBy
      */
     public function testFindOneByReturnSeveral()
     {
@@ -320,7 +318,7 @@ class DbJsonBasedFindingTest extends DbJsonBasedTest
     }
 
     /**
-     * @covers DbJsonBasedCrudTest::findOneBy
+     * @covers DbJsonBasedFindingTest::findOneBy
      */
     public function testFindOneByReturnSeveralCaseInsensitive()
     {
@@ -371,7 +369,7 @@ class DbJsonBasedFindingTest extends DbJsonBasedTest
     }
 
     /**
-     * @covers DbJsonBasedCrudTest::findOneBy
+     * @covers DbJsonBasedFindingTest::findOneBy
      */
     public function testFindOneByStart()
     {
@@ -420,7 +418,7 @@ class DbJsonBasedFindingTest extends DbJsonBasedTest
     }
 
     /**
-     * @covers DbJsonBasedCrudTest::findOneBy
+     * @covers DbJsonBasedFindingTest::findOneBy
      */
     public function testFindOneByStartCaseInsensitive()
     {
@@ -473,7 +471,7 @@ class DbJsonBasedFindingTest extends DbJsonBasedTest
     }
 
     /**
-     * @covers DbJsonBasedCrudTest::findOneBy
+     * @covers DbJsonBasedFindingTest::findOneBy
      */
     public function testFindOneByEnd()
     {
@@ -522,7 +520,7 @@ class DbJsonBasedFindingTest extends DbJsonBasedTest
     }
 
     /**
-     * @covers DbJsonBasedCrudTest::findOneBy
+     * @covers DbJsonBasedFindingTest::findOneBy
      */
     public function testFindOneByEndCaseInsensitive()
     {
@@ -575,7 +573,7 @@ class DbJsonBasedFindingTest extends DbJsonBasedTest
     }
 
     /**
-     * @covers DbJsonBasedCrudTest::findOneBy
+     * @covers DbJsonBasedFindingTest::findOneBy
      */
     public function testFindOneByContains()
     {
@@ -631,7 +629,7 @@ class DbJsonBasedFindingTest extends DbJsonBasedTest
     }
 
     /**
-     * @covers DbJsonBasedCrudTest::findOneBy
+     * @covers DbJsonBasedFindingTest::findOneBy
      */
     public function testFindOneByContainsCaseInsensitive()
     {
@@ -695,7 +693,7 @@ class DbJsonBasedFindingTest extends DbJsonBasedTest
     }
 
     /**
-     * @covers DbJsonBasedCrudTest::findOneBy
+     * @covers DbJsonBasedFindingTest::findOneBy
      */
     public function testFindOneByMultipleFilters()
     {

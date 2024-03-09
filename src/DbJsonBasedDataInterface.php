@@ -7,7 +7,7 @@ interface DbJsonBasedDataInterface
     /**
      * checkTableName
      * 
-     * Do some checks and verify if the tableName exists int the database
+     * Do some checks and verify if the tableName exists into the database
      *
      * @return void
      */
@@ -16,7 +16,7 @@ interface DbJsonBasedDataInterface
     /**
      * checkColumns
      * 
-     * Do some checks and verify if all prodvided columns exists in the database's columns
+     * Do some checks and verify if all provided columns exists in the database's columns
      *
      * @return void
      */

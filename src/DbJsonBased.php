@@ -17,22 +17,21 @@ class DbJsonBased
     /**
      * __construct
      *
-     * @param string $dbName Path of the json database, without extension, or only .json extension
+     * @param string $dbName Path of the json database, without extension, or only .json extension allowed
+     * @throws DbJsonBasedInvalidArgumentException
      */
     public function __construct(private string $dbName)
     {
+        // With .json extension provided incorrectly
+        if (isset(pathinfo($dbName)["extension"]) && pathinfo($dbName)["extension"] !== "json") {
+            throw new DbJsonBasedInvalidArgumentException("The provided extension '." . pathinfo($dbName)["extension"] . "' is invalid. Please indicate your database's name without extension or with '.json' extension only.");
+        }
+
         // With .json extension provided correctly
         if (isset(pathinfo($dbName)["extension"]) && pathinfo($dbName)["extension"] === "json") {
             $this->dbName = $dbName;
-        }
-
-        // With extension provided incorrectly
-        if (isset(pathinfo($dbName)["extension"]) && pathinfo($dbName)["extension"] !== "json") {
-            throw new DbJsonBasedInvalidArgumentException("The provided extension '." . pathinfo($dbName)["extension"] . "' is invalid. Please indicate your database's name without extension or with '.json' extension.");
-        }
-
-        // Without extension provided
-        if (!isset(pathinfo($dbName)["extension"])) {
+        } else {
+            // Without extension
             $this->dbName = $dbName . ".json";
         }
     }
@@ -48,7 +47,7 @@ class DbJsonBased
      */
     public function createDb(DbJsonBasedStructureInterface $structure): bool
     {
-
+        // Create the structure
         $newStructure = [
             $structure->getTableName() => [
                 "COLUMNS" => $structure->getColumns(),
@@ -58,6 +57,7 @@ class DbJsonBased
         ];
 
         if (Utils::isFileExist($this->dbName)) {
+            // Adding new structures
             $previousStructure = Utils::getContentAndDecode($this->dbName);
             $newStructure = array_merge($previousStructure, $newStructure);
         }
@@ -82,7 +82,7 @@ class DbJsonBased
     /**
      * getName
      * 
-     * Return the name (without extention) of the database
+     * Return the name (without extension) of the database
      *
      * @return string
      */
@@ -106,9 +106,10 @@ class DbJsonBased
     /**
      * findAll
      * 
-     * Retun all datas from database's table and return these
+     * Return all datas from database's table
      *
      * @param string $tableName The targeted table into the database
+     * @throws DbJsonBasedInvalidArgumentException
      * @return array
      */
     public function findAll(string $tableName): array
@@ -123,19 +124,25 @@ class DbJsonBased
      * 
      * Return the data equal to the provided id
      *
-     * @param string $tableName
-     * @param int $id
+     * @param string $tableName The targeted table into the database
+     * @param int $id The targeted ID
+     * @throws DbJsonBasedInvalidArgumentException
      * @return array
      */
     public function findOne(string $tableName, int $id): array
     {
         $datas = $this->findAll($tableName);
 
-        $resultat = array_filter($datas, function ($item) use ($id) {
+        $result = array_filter($datas, function ($item) use ($id) {
             return $item["ID"] === $id;
         });
 
-        return array_values($resultat);
+        // If ID does not exist
+        if (empty($result)) {
+            throw new DbJsonBasedInvalidArgumentException("The provided ID does not exist in the Database.");
+        }
+
+        return array_values($result);
     }
 
     /**
@@ -146,16 +153,17 @@ class DbJsonBased
      * @param string $tableName The targeted table into the database
      * @param array $criteria The criteria on which to filter, "EXACT" by default
      * 
-     * exemple with filter : [ ["first_name" => "John|filter"] ]
+     * example with filter : [ ["first_name" => "John|filter"] ]
      * 
-     * exemple with filters : [ ["first_name" => "Jo|filter"], ["last_name" => "n|filter"] ]
+     * example with filters : [ ["first_name" => "Jo|filter"], ["last_name" => "n|filter"] ]
      * 
-     * exemple without filter : [ ["first_name" => "John"] ] so "EXACT" filter implicitly
+     * example without filter : [ ["first_name" => "John"] ] so "EXACT" filter implicitly
      * 
      * Valid Filters are **START_BY**, **END_BY**, **CONTAINS** and **EXACT** only.
      * You can use the class constants provided **DbJsonBased::START_BY|END_BY|CONTAINS|EXACT**
      * 
      * @param bool $caseSensitive If we have to respect the case sensitive, "true" by default
+     * @throws DbJsonBasedInvalidArgumentException
      * @return array
      */
     public function findOneBy(string $tableName, array $criteria, bool $caseSensitive = true): array
@@ -231,6 +239,8 @@ class DbJsonBased
      * If the table is created but without data yet, the returned id will be NULL
      *
      * @param string $tableName The targeted table into the database
+     * @throws DbJsonBasedInvalidArgumentException
+     * @throws DbJsonBasedRuntimeException
      * @return int|null
      */
     public function getLastId(string $tableName): int|null
@@ -245,21 +255,22 @@ class DbJsonBased
      * 
      * Insert datas into the targeted table
      *
-     * @param DbJsonBasedData $database
-     * @param string $tableName Name of the targeted table
      * @param DbJsonBasedDataInterface $datas Associative array containing the informations to insert
      * 
-     * exemple :
-     * [
+     * example :
+     * ($dataBase, "TableName", [
      * 
      *  ["first_name" => "John", "last_name" => "Doe", "age" => 45],
      * 
      *  ["first_name" => "Neo", "last_name" => "Trinitron", "age" => 36]
      * 
-     * ]
-     * @return void
+     * ])
+     * 
+     * @throws DbJsonBasedInvalidArgumentException
+     * @throws DbJsonBasedRuntimeException
+     * @return bool
      */
-    public function insert(DbJsonBasedDataInterface $datas): void
+    public function insert(DbJsonBasedDataInterface $datas): bool
     {
         // Get existing datas
         $existingDatas = $this->findAll($datas->tableName);
@@ -269,9 +280,8 @@ class DbJsonBased
         $lastUsedId = $this->getLastId($datas->tableName);
 
         foreach ($datas->datas as $data) {
-            $keysUpperCase = array_map("strtoupper", array_keys($data));
-            $valuesLowerCase = $data;
-            $resultArray = array_combine($keysUpperCase, $valuesLowerCase);
+            // Harmonize key case to Upper
+            $resultArray = Utils::harmonizeKeyCase($data, "strtoupper");
 
             // Adding ID
             if (is_null($lastUsedId)) {
@@ -292,6 +302,8 @@ class DbJsonBased
         $allDatabaseDatas[strtoupper($datas->tableName)]["VALUES"] = $mergingDatas;
         $allDatabaseDatas[strtoupper($datas->tableName)]["ID"] = $lastUsedId;
         Utils::encodeAndWriteFile($this->dbName, $allDatabaseDatas);
+
+        return true;
     }
 
     /**
@@ -301,7 +313,9 @@ class DbJsonBased
      *
      * @param string $tableName The targeted table into the database
      * @param int|null $idToRemove The entity's ID to remove
-     * @param bool $removeAllTableNameValues=false Will remove the entire tableName's values
+     * @param bool $removeAllTableNameValues=false Will remove the entire tableName's values if true (and without ID)
+     * @throws DbJsonBasedInvalidArgumentException
+     * @throws DbJsonBasedRuntimeException
      * @return bool
      */
     public function remove(string $tableName, ?int $idToRemove, bool $removeAllTableNameValues = false): bool
@@ -311,21 +325,17 @@ class DbJsonBased
 
         if (!is_null($idToRemove) && $removeAllTableNameValues) {
             // Remove entire tableName with an ID
-            throw new DbJsonBasedInvalidArgumentException("Cannot remove entire table if an ID is provided");
+            throw new DbJsonBasedInvalidArgumentException("Cannot remove entire value's table if an ID is provided.");
         } else if (is_null($idToRemove) && $removeAllTableNameValues) {
             // Remove entire tableName without ID
             $removingAll = true;
             $this->getVerifiedTable($tableName);
         } else {
+            // Remove one entity
             $removingAll = false;
-            $entity = $this->findOne($tableName, $idToRemove);
-
-            // If the ID does not exist
-            if (!isset($entity) || empty($entity)) {
-                throw new DbJsonBasedInvalidArgumentException("The provided ID does not exist");
-            }
-
+            $this->findOne($tableName, $idToRemove);
             $allDatas = $this->findAll($tableName);
+
             $datasKept = array_filter($allDatas, function ($item) use ($idToRemove) {
                 return $item["ID"] !== $idToRemove;
             });
@@ -351,8 +361,19 @@ class DbJsonBased
      * 
      * Update values by replacing them into the BDD
      *
-     * @param DbJsonBasedDataInterface $datas Datas to be update
+     * @param DbJsonBasedDataInterface $datas Associative array containing the informations to update
+     * 
+     * example :
+     * ($dataBase, "TableName", [
+     * 
+     *  ["first_name" => "John", "id" => 1],
+     * 
+     *  ["last_name" => "Trinitron", "age" => 36, "id" => 5]
+     * 
+     * ])
+     * 
      * @throws DbJsonBasedInvalidArgumentException
+     * @throws DbJsonBasedRuntimeException
      * @return bool
      */
     public function update(DbJsonBasedDataInterface $datas): bool
@@ -361,18 +382,16 @@ class DbJsonBased
 
         // If datas are empty
         if (empty($modifiedDatas)) {
-            throw new DbJsonBasedInvalidArgumentException("Datas cannot be empty");
+            throw new DbJsonBasedInvalidArgumentException("Datas cannot be empty.");
         }
 
-        // Id check
+        // Harmonizing and ID check
         foreach ($modifiedDatas as &$modifiedData) {
             // Harmonize given keys into uppercase
-            $keysUpperCase = array_map("strtoupper", array_keys($modifiedData));
-            $valuesLowerCase = $modifiedData;
-            $modifiedData = array_combine($keysUpperCase, $valuesLowerCase);
+            $modifiedData = Utils::harmonizeKeyCase($modifiedData, "strtoupper");
 
             if (!array_key_exists("ID", $modifiedData)) {
-                throw new DbJsonBasedInvalidArgumentException("You must provide the entity ID to modifiy");
+                throw new DbJsonBasedInvalidArgumentException("You must provide the entity ID to modify.");
             }
         }
 
@@ -382,8 +401,10 @@ class DbJsonBased
         foreach ($modifiedDatas as &$modifiedData) {
             // Update new values if ID match
             $id = $modifiedData["ID"];
+
             foreach ($allDatas as &$data) {
                 if ($data["ID"] === $id) {
+                    // If we match the ID, we modify the datas
                     foreach ($modifiedData as $key => $value) {
                         if ($key !== "ID") {
                             $data[$key] = $value;
@@ -404,26 +425,38 @@ class DbJsonBased
     /**
      * getVerifiedTable
      * 
-     * Do some checks and retrun the entire table
+     * Checks the Table name and return the entire table
      *
-     * @param string $tableName
+     * @param string $tableName The targeted table into the database
+     * @throws DbJsonBasedInvalidArgumentException
+     * @throws DbJsonBasedRuntimeException
      * @return array
      */
     public function getVerifiedTable(string $tableName): array
     {
         if (strlen($tableName) <= 0 || empty($tableName)) {
-            throw new DbJsonBasedInvalidArgumentException("The TABLENAME cannot be empty");
+            throw new DbJsonBasedInvalidArgumentException("The TABLENAME cannot be empty.");
         }
 
         $datas = Utils::getContentAndDecode($this->getPath());
 
         if (empty($datas[strtoupper($tableName)])) {
-            throw new DbJsonBasedInvalidArgumentException("The TABLENAME '$tableName' does not exist");
+            throw new DbJsonBasedInvalidArgumentException("The TABLENAME '$tableName' does not exist.");
         }
 
         return $datas[strtoupper($tableName)];
     }
 
+    /**
+     * getColumns
+     * 
+     * Return all columns belonging to the tageted Database
+     *
+     * @param string $tableName The targeted table into the database
+     * @throws DbJsonBasedInvalidArgumentException
+     * @throws DbJsonBasedRuntimeException
+     * @return array
+     */
     public function getColumns(string $tableName): array
     {
         $datas = $this->getVerifiedTable($tableName);

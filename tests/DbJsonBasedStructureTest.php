@@ -6,7 +6,7 @@ use Palepupet\DbJsonBased\DbJsonBasedStructure;
 use Palepupet\DbJsonBased\Tests\DbJsonBasedTest;
 use Palepupet\DbJsonBased\DbJsonBasedStructureInterface;
 use Palepupet\DbJsonBased\exceptions\DbJsonBasedInvalidArgumentException;
-
+use Palepupet\DbJsonBased\exceptions\DbJsonBasedInvalidTypeException;
 
 class DbJsonBasedStructureTest extends DbJsonBasedTest
 {
@@ -49,7 +49,7 @@ class DbJsonBasedStructureTest extends DbJsonBasedTest
      */
     public function testStructureDoesNotHaveFullValues()
     {
-        $this->expectException(DbJsonBasedInvalidArgumentException::class);
+        $this->expectException(DbJsonBasedInvalidTypeException::class);
         $structure = new DbJsonBasedStructure("tableName", [
             "key1" => ""
         ]);
@@ -60,7 +60,7 @@ class DbJsonBasedStructureTest extends DbJsonBasedTest
      */
     public function testStructureDoesNotHaveValidTypes()
     {
-        $this->expectException(DbJsonBasedInvalidArgumentException::class);
+        $this->expectException(DbJsonBasedInvalidTypeException::class);
         $structure = new DbJsonBasedStructure("tableName", [
             "key1" => "wrongTypes"
         ]);
