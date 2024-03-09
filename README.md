@@ -128,7 +128,7 @@ array(2) {
 > **_NOTICE :_**
 > You have to create the structure of your database, before inserting datas.
 
-**insert(DbJsonBasedDataInterface $datas)** Insert the datas passed as arguments, use **DbJsonBasedDataInterface** to do this. You can use the **DbJsonBasedData** class wich implements it with all needed methods to check them.
+**insert(DbJsonBasedDataInterface $datas)** Insert the datas passed as arguments, use **DbJsonBasedDataInterface** to do this. You can use the **DbJsonBasedData** class which implements it with all needed methods to check them.
 
 ```php
 $datas = new DbJsonBasedData($jsonDb, "Customers", [
@@ -452,11 +452,11 @@ array(4) {
 
 ## STATIC methods
 
-**Utils::isFileExist(string $path)** Return a boolean if the database exists and the .json file is created.
+**Utils::isFileExist(string $path)** Returns a boolean if the database exists and the .json file is created.
 
-**Utils::getContentAndDecode(string \$path, bool \$associative = true)** Return the content of the file and decode it. It return an associative array if the $associative argument is true, or an object if it is false.
+**Utils::getContentAndDecode(string \$path, bool \$associative = true)** Returns the content of the file and decode it. It returns an associative array if the $associative argument is true, or an object if it is false.
 
-**Utils::encodeAndWriteFile(string \$path, array $toEncode)** Encodes datas and write these into the specified file.
+**Utils::encodeAndWriteFile(string \$path, array $toEncode)** Encodes datas and writes these into the specified file.
 
 > **_NOTICE :_**
 > Datas written replaces the entire file. So if the file already exists with datas. The previous datas will be erased and replaced with the new ones.

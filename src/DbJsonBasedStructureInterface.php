@@ -27,7 +27,7 @@ interface DbJsonBasedStructureInterface
     /**
      * setColumns
      * 
-     * Set the columns of the future table
+     * Set the names/types of the future columns
      *
      * @param array $columns
      * @return void

@@ -49,11 +49,12 @@ class DbJsonBasedCrudTest extends DbJsonBasedTest
         ]);
 
         // Then, insert datas
-        $this->createDb->insert($datas);
+        $result = $this->createDb->insert($datas);
 
         // Finaly, verify inserted datas
         $insertedDatas = $this->createDb->findAll("identity");
 
+        $this->assertTrue($result);
         $this->assertIsArray($insertedDatas);
         $this->assertCount(2, $insertedDatas);
 
@@ -117,7 +118,7 @@ class DbJsonBasedCrudTest extends DbJsonBasedTest
                 "actif" => false
             ]
         ]);
-        $this->createDb->insert($datas);
+        $result = $this->createDb->insert($datas);
 
         // Create 2nd structure
         $structure2 = new DbJsonBasedStructure(
@@ -137,7 +138,7 @@ class DbJsonBasedCrudTest extends DbJsonBasedTest
                 "age" => 43,
             ]
         ]);
-        $this->createDb->insert($datas2);
+        $result2 = $this->createDb->insert($datas2);
 
         // Check
         $insertedIdentityDatas = $this->createDb->findAll("identity");
@@ -145,12 +146,14 @@ class DbJsonBasedCrudTest extends DbJsonBasedTest
 
         $this->assertIsArray($insertedIdentityDatas);
         $this->assertCount(2, $insertedIdentityDatas);
+        $this->assertTrue($result);
 
         $this->assertCount(6, $this->createDb->getColumns("identity"));
         $this->assertCount(4, $this->createDb->getColumns("customer"));
 
         $this->assertIsArray($insertedCustomerDatas);
         $this->assertCount(1, $insertedCustomerDatas);
+        $this->assertTrue($result2);
 
         for ($i = 0; $i <= 1; $i++) {
             $this->assertArrayHasKey("ID", $insertedIdentityDatas[$i]);
