@@ -423,6 +423,44 @@ class DbJsonBased
     }
 
     /**
+     * addColumn
+     * 
+     * Adds additional columns to an existing structure. Also adds fields in values ​​with NULL value by default
+     *
+     * @param DbJsonBasedStructureInterface $structure Structure of the existing Table
+     * @throws DbJsonBasedInvalidArgumentException
+     * @throws DbJsonBasedRuntimeException
+     * @return bool
+     */
+    public function addColumn(DbJsonBasedStructureInterface $structure): bool
+    {
+        // Modifying columns
+        $actualColumns = $this->getColumns($structure->getTableName());
+        $modifiedColumns = $structure->getColumns();
+        $mergedColumns = array_merge($actualColumns, $modifiedColumns);
+
+        // Adding columns in all datas except for ID
+        $allDatas = $this->findAll($structure->getTableName());
+
+        foreach ($allDatas as &$data) {
+            foreach ($modifiedColumns as $key => $value) {
+                if ($key === "ID") {
+                    continue;
+                }
+                $data += [$key => null];
+            }
+        }
+
+        // Updating datas
+        $allDatabase = Utils::getContentAndDecode($this->dbName);
+        $allDatabase[$structure->getTableName()]["COLUMNS"] = $mergedColumns;
+        $allDatabase[$structure->getTableName()]["VALUES"] = $allDatas;
+        Utils::encodeAndWriteFile($this->dbName, $allDatabase);
+
+        return true;
+    }
+
+    /**
      * getVerifiedTable
      * 
      * Checks the Table name and return the entire table
