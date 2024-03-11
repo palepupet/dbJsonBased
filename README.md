@@ -149,6 +149,35 @@ $datas = new DbJsonBasedData($jsonDb, "Customers", [
 $jsonDb->insert($datas);
 ```
 
+**Add columns :**
+
+**addColumn(DbJsonBasedStructureInterface $structure)** Adds columns to your structure and datas. Adding columns uses **DbJsonBasedStructureInterface** to take advantage of structure checks. You can use the **DbJsonBasedStructure** class which implements this interface.
+
+> **_NOTICE :_**
+> Keep in mind that adding column, insert missing columns in your datas. However your datas will be added with a NULL value. You will need to do an update to update them with the desired values.
+
+```php
+// 'Entity' columns
+["ID" => "int", "FIRST_NAME" => "string", "LAST_NAME" => "string"]
+
+// Adding new columns
+$addColumns = new DbJsonBasedStructure(
+    "customers",
+    [
+        "actif" => DbJsonBasedStructure::TYPE_BOOLEAN,
+        "address" => DbJsonBasedStructure::TYPE_STRING,
+    ]
+);
+$jsonDb->addColumn($addColumns);
+
+// result columns
+["ID" => "int", "FIRST_NAME" => "string", "LAST_NAME" => "string", "ACTIF" => "bool", "ADDRESS" => "string"]
+
+// result datas with NULL value
+["first_name" => "John", "last_name" => "Doe", "actif" => NULL, "address" => NULL],
+["first_name" => "Neo", "last_name" => "Turingstone", "actif" => NULL, "address" => NULL]
+```
+
 **Update datas :**
 
 **update(DbJsonBasedDataInterface \$datas)** Update the datas only put in arguments. The other datas will remain unchanged. The update uses **DbJsonBasedDataInterface** as for creating the database structure. This allows to use the same checks on the table, the fields... For updating datas you must therefore also use the **DbJsonBasedData** class.
@@ -164,7 +193,7 @@ $jsonDb->insert($datas);
 ["first_name" => "Luke", "last_name" => "Skylogger", "size" => 173.80, "age" => 18]
 
 // Update the entity with the ID 1
-$datasToUpdate = new DbJsonBasedData($jsonDb, "identity", [
+$datasToUpdate = new DbJsonBasedData($jsonDb, "customers", [
     [
         "last_name" => "Turingstone",
         "age" => 55,
@@ -184,7 +213,7 @@ If you have several entities to modify, you can add as many array as necessary. 
 
 ```php
 // Update multiple entities
-$datasToUpdate = new DbJsonBasedData($jsonDb, "identity", [
+$datasToUpdate = new DbJsonBasedData($jsonDb, "customers", [
     [
         "first_name" => "Neo",
         "age" => 45,
