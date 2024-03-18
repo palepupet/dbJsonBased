@@ -7,6 +7,8 @@ use Palepupet\DbJsonBased\exceptions\DbJsonBasedRuntimeException;
 
 class Utils
 {
+    public const STRTOUPPER = "strtoupper";
+    public const STRTOLOWER = "strtolower";
 
     /**
      * isFileExist
@@ -77,19 +79,28 @@ class Utils
      * Harmonize all keys case
      *
      * @param array $datas Simple datas array containing the keys to be harmonized
-     * @param string $caseFunction The case function, ex: 'strtolower' | 'strtoupper'
+     * @param string $caseFunction The case function, ex: 'strtolower' | 'strtoupper' You can use class constants provided : **STRTOLOWER | STRTOUPPER**
      * @param bool $simpleArray=false Using the method on an associative array or on a simple array
      * @throws DbJsonBasedInvalidArgumentException
      * @return array
      */
     public static function harmonizeKeyCase(array $datas, string $caseFunction, bool $simpleArray = false): array
     {
+        $allowedCaseFunctions = [
+            self::STRTOUPPER,
+            self::STRTOLOWER
+        ];
+
         if (empty($datas)) {
             throw new DbJsonBasedInvalidArgumentException("The datas cannot be empty.");
         }
 
         if (strlen($caseFunction) <= 0 || empty($caseFunction)) {
             throw new DbJsonBasedInvalidArgumentException("The case function cannot be empty.");
+        }
+
+        if (!in_array($caseFunction, $allowedCaseFunctions)) {
+            throw new DbJsonBasedInvalidArgumentException("The given case function is not allowed. You have to choose between : " . implode(",", $allowedCaseFunctions));
         }
 
         if ($simpleArray) {

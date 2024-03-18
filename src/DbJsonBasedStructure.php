@@ -84,7 +84,7 @@ class DbJsonBasedStructure implements DbJsonBasedStructureInterface
     public function setColumns(array $columns): void
     {
         // Format datas
-        $resultArray = Utils::harmonizeKeyCase($columns, "strtoupper");
+        $resultArray = Utils::harmonizeKeyCase($columns, Utils::STRTOUPPER);
 
         // Adding ID if it is not provided
         if (!isset($resultArray["ID"])) {
