@@ -78,10 +78,11 @@ class Utils
      *
      * @param array $datas Simple datas array containing the keys to be harmonized
      * @param string $caseFunction The case function, ex: 'strtolower' | 'strtoupper'
+     * @param bool $simpleArray=false Using the method on an associative array or on a simple array
      * @throws DbJsonBasedInvalidArgumentException
      * @return array
      */
-    public static function harmonizeKeyCase(array $datas, string $caseFunction): array
+    public static function harmonizeKeyCase(array $datas, string $caseFunction, bool $simpleArray = false): array
     {
         if (empty($datas)) {
             throw new DbJsonBasedInvalidArgumentException("The datas cannot be empty.");
@@ -89,6 +90,10 @@ class Utils
 
         if (strlen($caseFunction) <= 0 || empty($caseFunction)) {
             throw new DbJsonBasedInvalidArgumentException("The case function cannot be empty.");
+        }
+
+        if ($simpleArray) {
+            return array_map($caseFunction, $datas);
         }
 
         $keysUpperCase = array_map($caseFunction, array_keys($datas));

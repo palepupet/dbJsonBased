@@ -5,6 +5,7 @@ namespace Palepupet\DbJsonBased;
 use Palepupet\DbJsonBased\Utils;
 use Palepupet\DbJsonBased\DbJsonBasedStructureInterface;
 use Palepupet\DbJsonBased\exceptions\DbJsonBasedRuntimeException;
+use Palepupet\DbJsonBased\exceptions\DbJsonBasedInvalidKeyException;
 use Palepupet\DbJsonBased\exceptions\DbJsonBasedInvalidArgumentException;
 
 class DbJsonBased
@@ -455,6 +456,70 @@ class DbJsonBased
         $allDatabase = Utils::getContentAndDecode($this->dbName);
         $allDatabase[$structure->getTableName()]["COLUMNS"] = $mergedColumns;
         $allDatabase[$structure->getTableName()]["VALUES"] = $allDatas;
+        Utils::encodeAndWriteFile($this->dbName, $allDatabase);
+
+        return true;
+    }
+    
+    /**
+     * removeColumn
+     * 
+     * Remove columns in the table's structure and also in the datas
+     *
+     * @param string $tableName The targeted table into the database
+     * @param array $removedColumns Table containing the different keys to remove
+     * @throws DbJsonBasedInvalidArgumentException
+     * @throws DbJsonBasedRuntimeException
+     * @throws DbJsonBasedInvalidKeyException
+     * @return bool
+     */
+    public function removeColumn(string $tableName, array $removedColumns): bool 
+    {
+        // If removed columns is empty
+        if (count($removedColumns) <= 0) {
+            throw new DbJsonBasedInvalidArgumentException("You must add at least one Key that you want to remove.");
+        }
+
+        // Harmonize given keys into uppercase
+        $removedColumns = $removedColumns = Utils::harmonizeKeyCase($removedColumns, "strtoupper", true);
+
+        // Remove ID key from the removed array if exists, we cannot remove it
+        if (in_array("ID", $removedColumns)) {
+            unset($removedColumns[array_search("ID", $removedColumns)]);
+        }
+        
+        // Remove columns into columns
+        $allColumns = $this->getColumns($tableName);
+
+        $columnsToRemove = [];
+        foreach($removedColumns as $removed) {
+            // If the given key does not exist
+            if (!array_key_exists($removed, $allColumns)) {
+                throw new DbJsonBasedInvalidKeyException("the given key '{$removed}' does not exist in the columns of the table '" . strtoupper($tableName) . "'.");
+            }
+            
+            array_push($columnsToRemove, $removed);
+        }
+
+        foreach($columnsToRemove as $column) {
+            unset($allColumns[$column]);
+        }
+
+        // Remove all columns into datas
+        $allDatas = $this->findAll($tableName);
+        
+        foreach($allDatas as &$datas) {
+            foreach($removedColumns as $column) {
+                if (array_key_exists($column, $datas)) {
+                    unset($datas[$column]);
+                }
+            }
+        }
+
+        // Updating datas
+        $allDatabase = Utils::getContentAndDecode($this->dbName);
+        $allDatabase[strtoupper($tableName)]["COLUMNS"] = $allColumns;
+        $allDatabase[strtoupper($tableName)]["VALUES"] = $allDatas;
         Utils::encodeAndWriteFile($this->dbName, $allDatabase);
 
         return true;

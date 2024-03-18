@@ -178,6 +178,39 @@ $jsonDb->addColumn($addColumns);
 ["first_name" => "Neo", "last_name" => "Turingstone", "actif" => NULL, "address" => NULL]
 ```
 
+**Remove columns :**
+
+**removeColumn(string \$tableName, array \$removedColumns)** If you realize that a column has become unnecessary or you want to remove a column added by mistake, you can use this method. It allows you to delete columns in each datas, but also in the structure part of the table.
+
+> **_NOTICE :_**
+> If you delete columns, keep in mind that any deleted data cannot be recovered. It will be permanently deleted.
+
+```php
+// 'Entity' columns
+["ID" => "int", "FIRST_NAME" => "string", "LAST_NAME" => "string", "SIZE" => "float", "AGE" => "int"]
+
+// 'Entity' datas
+["first_name" => "John", "last_name" => "Doe", "size" => 175.50, "age" => 21],
+["first_name" => "Neo", "last_name" => "Trinitron", "size" => 184.20, "age" => 33],
+["first_name" => "Alan", "last_name" => "Turingstone", "size" => 170.30, "age" => 45],
+["first_name" => "Luke", "last_name" => "Skylogger", "size" => 173.80, "age" => 18]
+
+// Deletion of the columns SIZE and AGE
+$this->createDb->removeColumn("customers", [
+    "size",
+    "age"
+]);
+
+// result 'Entity' columns
+["ID" => "int", "FIRST_NAME" => "string", "LAST_NAME" => "string"]
+
+// result 'Entity' datas
+["first_name" => "John", "last_name" => "Doe"],
+["first_name" => "Neo", "last_name" => "Trinitron"],
+["first_name" => "Alan", "last_name" => "Turingstone"],
+["first_name" => "Luke", "last_name" => "Skylogger"]
+```
+
 **Update datas :**
 
 **update(DbJsonBasedDataInterface \$datas)** Update the datas only put in arguments. The other datas will remain unchanged. The update uses **DbJsonBasedDataInterface** as for creating the database structure. This allows to use the same checks on the table, the fields... For updating datas you must therefore also use the **DbJsonBasedData** class.
