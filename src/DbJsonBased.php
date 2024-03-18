@@ -282,7 +282,7 @@ class DbJsonBased
 
         foreach ($datas->datas as $data) {
             // Harmonize key case to Upper
-            $resultArray = Utils::harmonizeKeyCase($data, "strtoupper");
+            $resultArray = Utils::harmonizeKeyCase($data, Utils::STRTOUPPER);
 
             // Adding ID
             if (is_null($lastUsedId)) {
@@ -389,7 +389,7 @@ class DbJsonBased
         // Harmonizing and ID check
         foreach ($modifiedDatas as &$modifiedData) {
             // Harmonize given keys into uppercase
-            $modifiedData = Utils::harmonizeKeyCase($modifiedData, "strtoupper");
+            $modifiedData = Utils::harmonizeKeyCase($modifiedData, Utils::STRTOUPPER);
 
             if (!array_key_exists("ID", $modifiedData)) {
                 throw new DbJsonBasedInvalidArgumentException("You must provide the entity ID to modify.");
@@ -481,7 +481,7 @@ class DbJsonBased
         }
 
         // Harmonize given keys into uppercase
-        $removedColumns = $removedColumns = Utils::harmonizeKeyCase($removedColumns, "strtoupper", true);
+        $removedColumns = $removedColumns = Utils::harmonizeKeyCase($removedColumns, Utils::STRTOUPPER, true);
 
         // Remove ID key from the removed array if exists, we cannot remove it
         if (in_array("ID", $removedColumns)) {

@@ -514,6 +514,8 @@ array(4) {
 
 ## STATIC methods
 
+**Utils::harmonizeKeyCase(array \$datas, string \$caseFunction, bool \$simpleArray = false)** Returns the array of datas passed as arguments. You can change the case to Lower or Upper. If $simpleArray is true, each element of the array (standard) is modified according to the given case. Otherwise if it is false, only the keys of this array (associative) are modified according to the case indicated. You can use class constants to do that : **STRTOUPPER | STRTOLOWER**
+
 **Utils::isFileExist(string $path)** Returns a boolean if the database exists and the .json file is created.
 
 **Utils::getContentAndDecode(string \$path, bool \$associative = true)** Returns the content of the file and decode it. It returns an associative array if the $associative argument is true, or an object if it is false.
