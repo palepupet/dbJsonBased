@@ -122,4 +122,32 @@ class DbJsonBasedStaticTest extends DbJsonBasedTest
         $this->assertEquals("uppercase", $harmonizedCase[1]);
         $this->assertEquals("mixedcase", $harmonizedCase[2]);
     }
+
+    /**
+     * @covers DbJsonBasedStaticTest::harmonizeKeyCase
+     */
+    public function testHarmonizeKeyCaseSimpleArrayUpper() {
+        $simpleArray = ["Upper1", "UPPER2", "upper3", "UppER4"];
+        
+        $harmonizedCase = Utils::harmonizeKeyCase($simpleArray, "strtoupper", true);
+        
+        $this->assertEquals("UPPER1", $harmonizedCase[0]);
+        $this->assertEquals("UPPER2", $harmonizedCase[1]);
+        $this->assertEquals("UPPER3", $harmonizedCase[2]);
+        $this->assertEquals("UPPER4", $harmonizedCase[3]);
+    }
+
+    /**
+     * @covers DbJsonBasedStaticTest::harmonizeKeyCase
+     */
+    public function testHarmonizeKeyCaseSimpleArrayLower() {
+        $simpleArray = ["Lower1", "LOWER2", "lower3", "LoWEr4"];
+        
+        $harmonizedCase = Utils::harmonizeKeyCase($simpleArray, "strtolower", true);
+        
+        $this->assertEquals("lower1", $harmonizedCase[0]);
+        $this->assertEquals("lower2", $harmonizedCase[1]);
+        $this->assertEquals("lower3", $harmonizedCase[2]);
+        $this->assertEquals("lower4", $harmonizedCase[3]);
+    }
 }

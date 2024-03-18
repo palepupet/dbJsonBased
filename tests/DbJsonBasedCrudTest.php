@@ -4,6 +4,7 @@ namespace Palepupet\DbJsonBased\Tests;
 
 use Palepupet\DbJsonBased\DbJsonBasedData;
 use Palepupet\DbJsonBased\DbJsonBasedStructure;
+use Palepupet\DbJsonBased\exceptions\DbJsonBasedInvalidKeyException;
 use Palepupet\DbJsonBased\exceptions\DbJsonBasedInvalidArgumentException;
 
 class DbJsonBasedCrudTest extends DbJsonBasedTest
@@ -1219,5 +1220,206 @@ class DbJsonBasedCrudTest extends DbJsonBasedTest
         $this->assertEquals($valuesCustomer[0]["ID"], 0);
         $this->assertEquals($valuesCustomer[0]["FIRST_NAME"], "Neo");
         $this->assertEquals($valuesCustomer[0]["AGE"], 23);
+    }
+
+    /**
+     * @covers DbJsonBasedCrudTest::removeColumn
+     */
+    public function testRemoveColumnEmptyArray()
+    {
+        // Create file
+        $structure = new DbJsonBasedStructure(
+            "identity",
+            [
+                "first_name" => DbJsonBasedStructure::TYPE_STRING,
+                "last_name" => DbJsonBasedStructure::TYPE_STRING,
+                "size" => DbJsonBasedStructure::TYPE_FLOAT,
+                "age" => DbJsonBasedStructure::TYPE_INT,
+                "actif" => DbJsonBasedStructure::TYPE_BOOLEAN
+            ]
+        );
+
+        $this->createDb->createDb($structure);
+
+        // Add datas
+        $datas = new DbJsonBasedData($this->createDb, "identity", [
+            [
+                "first_name" => "John",
+                "last_name" => "Doe",
+                "size" => 175.50,
+                "age" => 21,
+                "actif" => true
+            ],
+            [
+                "first_name" => "Neo",
+                "last_name" => "Trinitron",
+                "size" => 184.20,
+                "age" => 33,
+                "actif" => false
+            ]
+        ]);
+
+        $this->createDb->insert($datas);
+
+        // Remove columns
+        $this->expectException(DbJsonBasedInvalidArgumentException::class);
+        $removed = $this->createDb->removeColumn("identity", []);
+    }
+
+    /**
+     * @covers DbJsonBasedCrudTest::removeColumn
+     */
+    public function testRemoveColumnKeyDoesNotExist()
+    {
+        // Create file
+        $structure = new DbJsonBasedStructure(
+            "identity",
+            [
+                "first_name" => DbJsonBasedStructure::TYPE_STRING,
+                "last_name" => DbJsonBasedStructure::TYPE_STRING,
+                "size" => DbJsonBasedStructure::TYPE_FLOAT,
+                "age" => DbJsonBasedStructure::TYPE_INT,
+                "actif" => DbJsonBasedStructure::TYPE_BOOLEAN
+            ]
+        );
+
+        $this->createDb->createDb($structure);
+
+        // Add datas
+        $datas = new DbJsonBasedData($this->createDb, "identity", [
+            [
+                "first_name" => "John",
+                "last_name" => "Doe",
+                "size" => 175.50,
+                "age" => 21,
+                "actif" => true
+            ],
+            [
+                "first_name" => "Neo",
+                "last_name" => "Trinitron",
+                "size" => 184.20,
+                "age" => 33,
+                "actif" => false
+            ]
+        ]);
+
+        $this->createDb->insert($datas);
+
+        // Remove columns
+        $this->expectException(DbJsonBasedInvalidKeyException::class);
+        $removed = $this->createDb->removeColumn("identity", ["wrongKey"]);
+    }
+
+    /**
+     * @covers DbJsonBasedCrudTest::removeColumn
+     */
+    public function testRemoveColumnDoNotDeletedId()
+    {
+        // Create file
+        $structure = new DbJsonBasedStructure(
+            "identity",
+            [
+                "first_name" => DbJsonBasedStructure::TYPE_STRING,
+                "last_name" => DbJsonBasedStructure::TYPE_STRING,
+                "size" => DbJsonBasedStructure::TYPE_FLOAT,
+                "age" => DbJsonBasedStructure::TYPE_INT,
+                "actif" => DbJsonBasedStructure::TYPE_BOOLEAN
+            ]
+        );
+
+        $this->createDb->createDb($structure);
+
+        // Add datas
+        $datas = new DbJsonBasedData($this->createDb, "identity", [
+            [
+                "first_name" => "John",
+                "last_name" => "Doe",
+                "size" => 175.50,
+                "age" => 21,
+                "actif" => true
+            ],
+            [
+                "first_name" => "Neo",
+                "last_name" => "Trinitron",
+                "size" => 184.20,
+                "age" => 33,
+                "actif" => false
+            ]
+        ]);
+
+        $this->createDb->insert($datas);
+
+        // Remove columns
+        $removed = $this->createDb->removeColumn("identity", ["id"]);
+
+        // Check
+        $this->assertTrue($removed);
+
+        $columns = $this->createDb->getColumns("identity");
+
+        $this->assertCount(6, $columns);
+        $this->assertArrayHasKey("FIRST_NAME", $columns);
+        $this->assertArrayHasKey("LAST_NAME", $columns);
+        $this->assertArrayHasKey("SIZE", $columns);
+        $this->assertArrayHasKey("AGE", $columns);
+        $this->assertArrayHasKey("ACTIF", $columns);
+        $this->assertArrayHasKey("ID", $columns); // Not removed
+    }
+
+    /**
+     * @covers DbJsonBasedCrudTest::removeColumn
+     */
+    public function testRemoveColumnMultiple()
+    {
+        // Create file
+        $structure = new DbJsonBasedStructure(
+            "identity",
+            [
+                "first_name" => DbJsonBasedStructure::TYPE_STRING,
+                "last_name" => DbJsonBasedStructure::TYPE_STRING,
+                "size" => DbJsonBasedStructure::TYPE_FLOAT,
+                "age" => DbJsonBasedStructure::TYPE_INT,
+                "actif" => DbJsonBasedStructure::TYPE_BOOLEAN
+            ]
+        );
+
+        $this->createDb->createDb($structure);
+
+        // Add datas
+        $datas = new DbJsonBasedData($this->createDb, "identity", [
+            [
+                "first_name" => "John",
+                "last_name" => "Doe",
+                "size" => 175.50,
+                "age" => 21,
+                "actif" => true
+            ],
+            [
+                "first_name" => "Neo",
+                "last_name" => "Trinitron",
+                "size" => 184.20,
+                "age" => 33,
+                "actif" => false
+            ]
+        ]);
+
+        $this->createDb->insert($datas);
+
+        // Remove columns
+        $removed = $this->createDb->removeColumn("identity", [
+            "size",
+            "actif"
+        ]);
+
+        // Check
+        $this->assertTrue($removed);
+
+        $columns = $this->createDb->getColumns("identity");
+
+        $this->assertCount(4, $columns);
+        $this->assertArrayHasKey("FIRST_NAME", $columns);
+        $this->assertArrayHasKey("LAST_NAME", $columns);
+        $this->assertArrayHasKey("AGE", $columns);
+        $this->assertArrayHasKey("ID", $columns);
     }
 }
