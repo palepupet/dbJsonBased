@@ -1422,4 +1422,148 @@ class DbJsonBasedCrudTest extends DbJsonBasedTest
         $this->assertArrayHasKey("AGE", $columns);
         $this->assertArrayHasKey("ID", $columns);
     }
+
+    /**
+     * @covers DbJsonBasedCrudTest::updateColumn
+     */
+    public function testUpdateColumnType()
+    {
+        // Create file
+        $structure = new DbJsonBasedStructure(
+            "identity",
+            [
+                "first_name" => DbJsonBasedStructure::TYPE_STRING,
+                "last_name" => DbJsonBasedStructure::TYPE_STRING,
+                "size" => DbJsonBasedStructure::TYPE_FLOAT,
+                "age" => DbJsonBasedStructure::TYPE_INT,
+                "actif" => DbJsonBasedStructure::TYPE_BOOLEAN
+            ]
+        );
+
+        $this->createDb->createDb($structure);
+
+        // Add datas
+        $datas = new DbJsonBasedData($this->createDb, "identity", [
+            [
+                "first_name" => "John",
+                "last_name" => "Doe",
+                "size" => 175.50,
+                "age" => 21,
+                "actif" => true
+            ],
+            [
+                "first_name" => "Neo",
+                "last_name" => "Trinitron",
+                "size" => 184.20,
+                "age" => 33,
+                "actif" => false
+            ]
+        ]);
+
+        $this->createDb->insert($datas);
+
+        // Update column
+        $newColumnType = new DbJsonBasedStructure(
+            "identity",
+            [
+                "size" => DbJsonBasedStructure::TYPE_INT,
+                "age" => DbJsonBasedStructure::TYPE_STRING,
+            ]
+        );
+
+        $updatedColumn = $this->createDb->updateColumn($newColumnType);
+
+        // Check
+        $this->assertTrue($updatedColumn);
+
+        $columns = $this->createDb->getColumns("identity");
+
+        $this->assertCount(6, $columns);
+        $this->assertArrayHasKey("FIRST_NAME", $columns);
+        $this->assertArrayHasKey("LAST_NAME", $columns);
+        $this->assertArrayHasKey("SIZE", $columns);
+        $this->assertArrayHasKey("AGE", $columns);
+        $this->assertArrayHasKey("ACTIF", $columns);
+        $this->assertArrayHasKey("ID", $columns);
+
+        $this->assertEquals($columns["FIRST_NAME"], DbJsonBasedStructure::TYPE_STRING);
+        $this->assertEquals($columns["LAST_NAME"], DbJsonBasedStructure::TYPE_STRING);
+        $this->assertEquals($columns["SIZE"], DbJsonBasedStructure::TYPE_INT);
+        $this->assertEquals($columns["AGE"], DbJsonBasedStructure::TYPE_STRING);
+        $this->assertEquals($columns["ACTIF"], DbJsonBasedStructure::TYPE_BOOLEAN);
+        $this->assertEquals($columns["ID"], DbJsonBasedStructure::TYPE_INT);
+    }
+
+    /**
+     * @covers DbJsonBasedCrudTest::renameColumn
+     */
+    public function testRenameColumn()
+    {
+        // Create file
+        $structure = new DbJsonBasedStructure(
+            "identity",
+            [
+                "first_name" => DbJsonBasedStructure::TYPE_STRING,
+                "last_name" => DbJsonBasedStructure::TYPE_STRING,
+                "size" => DbJsonBasedStructure::TYPE_FLOAT,
+                "age" => DbJsonBasedStructure::TYPE_INT,
+                "actif" => DbJsonBasedStructure::TYPE_BOOLEAN
+            ]
+        );
+
+        $this->createDb->createDb($structure);
+
+        // Add datas
+        $datas = new DbJsonBasedData($this->createDb, "identity", [
+            [
+                "first_name" => "John",
+                "last_name" => "Doe",
+                "size" => 175.50,
+                "age" => 21,
+                "actif" => true
+            ],
+            [
+                "first_name" => "Neo",
+                "last_name" => "Trinitron",
+                "size" => 184.20,
+                "age" => 33,
+                "actif" => false
+            ]
+        ]);
+
+        $this->createDb->insert($datas);
+
+        // Rename column
+        $renamedColumn = $this->createDb->renameColumn("identity", [
+            "first_name" => "name",
+            "actif" => "is_actif"
+        ]);
+
+        $this->assertTrue($renamedColumn);
+
+        $columns = $this->createDb->getColumns("identity");
+        $datas = $this->createDb->findAll("identity");
+
+        $this->assertCount(6, $columns);
+        $this->assertArrayHasKey("NAME", $columns);
+        $this->assertArrayHasKey("LAST_NAME", $columns);
+        $this->assertArrayHasKey("SIZE", $columns);
+        $this->assertArrayHasKey("AGE", $columns);
+        $this->assertArrayHasKey("IS_ACTIF", $columns);
+        $this->assertArrayHasKey("ID", $columns);
+
+        $this->assertEquals($datas[0]["ID"], 0);
+        $this->assertEquals($datas[0]["NAME"], "John");
+        $this->assertEquals($datas[0]["LAST_NAME"], "Doe");
+        $this->assertEquals($datas[0]["SIZE"], 175.50);
+        $this->assertEquals($datas[0]["AGE"], 21);
+        $this->assertEquals($datas[0]["IS_ACTIF"], true);
+
+        $this->assertEquals($datas[1]["ID"], 1);
+        $this->assertEquals($datas[1]["NAME"], "Neo");
+        $this->assertEquals($datas[1]["LAST_NAME"], "Trinitron");
+        $this->assertEquals($datas[1]["SIZE"], 184.20);
+        $this->assertEquals($datas[1]["AGE"], 33);
+        $this->assertEquals($datas[1]["IS_ACTIF"], false);
+    }
 }
