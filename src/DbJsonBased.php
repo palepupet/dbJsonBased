@@ -460,7 +460,7 @@ class DbJsonBased
 
         return true;
     }
-    
+
     /**
      * removeColumn
      * 
@@ -473,7 +473,7 @@ class DbJsonBased
      * @throws DbJsonBasedInvalidKeyException
      * @return bool
      */
-    public function removeColumn(string $tableName, array $removedColumns): bool 
+    public function removeColumn(string $tableName, array $removedColumns): bool
     {
         // If removed columns is empty
         if (count($removedColumns) <= 0) {
@@ -487,34 +487,119 @@ class DbJsonBased
         if (in_array("ID", $removedColumns)) {
             unset($removedColumns[array_search("ID", $removedColumns)]);
         }
-        
+
         // Remove columns into columns
         $allColumns = $this->getColumns($tableName);
 
         $columnsToRemove = [];
-        foreach($removedColumns as $removed) {
+        foreach ($removedColumns as $removed) {
             // If the given key does not exist
             if (!array_key_exists($removed, $allColumns)) {
                 throw new DbJsonBasedInvalidKeyException("the given key '{$removed}' does not exist in the columns of the table '" . strtoupper($tableName) . "'.");
             }
-            
+
             array_push($columnsToRemove, $removed);
         }
 
-        foreach($columnsToRemove as $column) {
+        foreach ($columnsToRemove as $column) {
             unset($allColumns[$column]);
         }
 
         // Remove all columns into datas
         $allDatas = $this->findAll($tableName);
-        
-        foreach($allDatas as &$datas) {
-            foreach($removedColumns as $column) {
+
+        foreach ($allDatas as &$datas) {
+            foreach ($removedColumns as $column) {
                 if (array_key_exists($column, $datas)) {
                     unset($datas[$column]);
                 }
             }
         }
+
+        // Updating datas
+        $allDatabase = Utils::getContentAndDecode($this->dbName);
+        $allDatabase[strtoupper($tableName)]["COLUMNS"] = $allColumns;
+        $allDatabase[strtoupper($tableName)]["VALUES"] = $allDatas;
+        Utils::encodeAndWriteFile($this->dbName, $allDatabase);
+
+        return true;
+    }
+
+    /**
+     * updateColumn
+     * 
+     * Updates the column types into the table structure
+     *
+     * @param DbJsonBasedStructureInterface $structure Structure of the existing Table
+     * @throws DbJsonBasedInvalidArgumentException
+     * @throws DbJsonBasedRuntimeException
+     * @return bool
+     */
+    public function updateColumn(DbJsonBasedStructureInterface $structure): bool
+    {
+        $allColumns = $this->getColumns($structure->getTableName());
+        $modifiedColumns = $structure->getColumns();
+
+        // remove ID column
+        unset($modifiedColumns["ID"]);
+
+        // Update column type
+        foreach ($modifiedColumns as $key => $value) {
+            if (array_key_exists($key, $allColumns) && $allColumns[$key] !== $value) {
+                $allColumns[$key] = $value;
+            }
+        }
+
+        // Updating datas
+        $allDatabase = Utils::getContentAndDecode($this->dbName);
+        $allDatabase[$structure->getTableName()]["COLUMNS"] = $allColumns;
+        Utils::encodeAndWriteFile($this->dbName, $allDatabase);
+
+        return true;
+    }
+
+    /**
+     * renameColumn
+     * 
+     * Renames the structure key column indicated by a new key, and renames also the key datas
+     *
+     * @param string $tableName The targeted table into the database
+     * @param array $renamedColumns Associative array containing the different keys to rename
+     * 
+     * example :
+     * [
+     * 
+     *  "old_column_name1" => "new_column_name1",
+     * 
+     *  "old_column_name2" => "new_column_name2",
+     * 
+     * ]
+     * 
+     * @throws DbJsonBasedInvalidArgumentException
+     * @throws DbJsonBasedRuntimeException
+     * @return bool
+     */
+    public function renameColumn(string $tableName, array $renamedColumns): bool
+    {
+        // If renamed array is empty
+        if (count($renamedColumns) <= 0) {
+            throw new DbJsonBasedInvalidArgumentException("You must add at least one Key that you want to rename.");
+        }
+
+        // Harmonize given keys into uppercase
+        $renamedColumns = Utils::harmonizeKeyCase($renamedColumns, Utils::STRTOUPPER);
+
+        // Remove ID key from the renamed array if exists, we cannot remove it
+        if (in_array("ID", $renamedColumns)) {
+            unset($renamedColumns[array_search("ID", $renamedColumns)]);
+        }
+
+        // Rename columns
+        $allColumns = $this->getColumns($tableName);
+        $allDatas = $this->findAll($tableName);
+
+        Utils::updateKeysArray($allColumns, $renamedColumns);
+        Utils::updateKeysArray($allDatas, $renamedColumns);
 
         // Updating datas
         $allDatabase = Utils::getContentAndDecode($this->dbName);

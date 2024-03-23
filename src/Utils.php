@@ -113,4 +113,32 @@ class Utils
 
         return $modifiedData;
     }
+
+    /**
+     * updateKeysArray
+     * 
+     * Renames keys into an array. Updates the keys of an array recursively.
+     *
+     * @param array $arrayToModified The array containing the keys to update
+     * @param array $renamedKey the array containing the new key which replaces the old one [old_key => new_key]
+     * @return void
+     */
+    public static function updateKeysArray(array &$arrayToModified, array $renamedKey)
+    {
+        foreach ($arrayToModified as &$value) {
+            // If the element is an array, recursively call the function
+            if (is_array($value)) {
+                self::updateKeysArray($value, $renamedKey);
+            } else {
+                foreach ($renamedKey as $oldKey => $newKey) {
+                    // If the old key exists in the array to modify
+                    if (array_key_exists($oldKey, $arrayToModified)) {
+                        // Create the new key with the actual value and unset the old key
+                        $arrayToModified[strtoupper($newKey)] = $arrayToModified[$oldKey];
+                        unset($arrayToModified[$oldKey]);
+                    }
+                }
+            }
+        }
+    }
 }

@@ -279,7 +279,7 @@ $jsonDb->addColumn($addColumns);
 ["id" => 3, "first_name" => "Luke", "last_name" => "Skylogger", "size" => 173.80, "age" => 18]
 
 // Deletion of the columns SIZE and AGE
-$this->createDb->removeColumn("customers", [
+$jsonDb->removeColumn("customers", [
     "size",
     "age"
 ]);
@@ -292,6 +292,59 @@ $this->createDb->removeColumn("customers", [
 ["id" => 1, "first_name" => "Neo", "last_name" => "Trinitron"],
 ["id" => 2, "first_name" => "Alan", "last_name" => "Turingstone"],
 ["id" => 3, "first_name" => "Luke", "last_name" => "Skylogger"]
+```
+
+### Update columns
+
+**updateColumn(DbJsonBasedStructureInterface $structure)** Allows you to modify the type of a column. Update column uses **DbJsonBasedStructureInterface** to take advantage of structure checks. You can use the **DbJsonBasedStructure** class which implements this interface.
+
+> **_NOTICE :_**
+> Modifying a type allows you to modify the type inside the database structure. However, your datas may no longer agree with the new type. You will therefore have to modify your datas according to your new type.
+
+```php
+// 'Entity' columns
+["ID" => "int", "FIRST_NAME" => "string", "LAST_NAME" => "string", "SIZE" => "float", "AGE" => "int"]
+
+// Update columns
+$newColumnType = new DbJsonBasedStructure("customers", [
+        "size" => DbJsonBasedStructure::TYPE_INT,
+        "age" => DbJsonBasedStructure::TYPE_STRING,
+    ]
+);
+$jsonDb->updateColumn($newColumnType);
+
+// result 'Entity' columns
+["ID" => "int", "FIRST_NAME" => "string", "LAST_NAME" => "string", "SIZE" => "int", "AGE" => "string"]
+```
+
+### Rename columns
+
+**renameColumn(string \$tableName, array \$renamedColumns)** If you need to modify the name of a column in the database structure and also in the datas, you can use this method.
+
+```php
+// 'Entity' columns
+["ID" => "int", "FIRST_NAME" => "string", "LAST_NAME" => "string", "SIZE" => "float", "AGE" => "int"]
+
+// 'Entity' datas
+["id" => 0, "first_name" => "John", "last_name" => "Doe", "size" => 175.50, "age" => 21],
+["id" => 1, "first_name" => "Neo", "last_name" => "Trinitron", "size" => 184.20, "age" => 33],
+["id" => 2, "first_name" => "Alan", "last_name" => "Turingstone", "size" => 170.30, "age" => 45],
+["id" => 3, "first_name" => "Luke", "last_name" => "Skylogger", "size" => 173.80, "age" => 18]
+
+// Rename columns
+$jsonDb->renameColumn("customers", [
+    "first_name" => "name",
+    "age" => "is_adult"
+]);
+
+// result 'Entity' columns
+["ID" => "int", "NAME" => "string", "LAST_NAME" => "string", "SIZE" => "int", "IS_ADULT" => "string"]
+
+// result 'Entity' datas
+["id" => 0, "name" => "John", "last_name" => "Doe", "size" => 175.50, "is_adult" => 21],
+["id" => 1, "name" => "Neo", "last_name" => "Trinitron", "size" => 184.20, "is_adult" => 33],
+["id" => 2, "name" => "Alan", "last_name" => "Turingstone", "size" => 170.30, "is_adult" => 45],
+["id" => 3, "name" => "Luke", "last_name" => "Skylogger", "size" => 173.80, "is_adult" => 18]
 ```
 
 ## Handling
@@ -533,6 +586,10 @@ array(4) {
 ```
 
 ## STATIC methods
+
+### updateKeysArray
+
+**Utils::updateKeysArray(array &\$arrayToModified, array \$renamedKey)** Renames the keys of the array passed as an argument
 
 ### harmonizeKeyCase
 
